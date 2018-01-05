@@ -1,5 +1,6 @@
 using System;
 using SharpQQ.Binarizer.Structured;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace SharpQQ.Protocol.Msf.Packets
 {
