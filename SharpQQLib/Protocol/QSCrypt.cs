@@ -6,6 +6,8 @@ namespace SharpQQ.Protocol
 {
     public class QSCrypt
     {
+        public static readonly byte[] ZeroKey = Enumerable.Repeat((byte)0, 16).ToArray();
+        
         public static int GetEncryptedSize(int originalSize)
         {
             int totalSize = originalSize + 10,
