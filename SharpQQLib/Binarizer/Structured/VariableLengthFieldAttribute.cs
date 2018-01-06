@@ -2,8 +2,6 @@ using System;
 using SharpQQ.Utils;
 using System.Linq;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public enum PrependLengthTransform
@@ -124,23 +122,23 @@ namespace SharpQQ.Binarizer.Structured
             }
         }
 
-        protected abstract byte[] ConvertToByteArray(object val, CodingContext context);
+        protected abstract byte[] ConvertToByteArray(object val);
 
-        protected abstract object ParseFromByteArray(Type type, byte[] buf, CodingContext context);
+        protected abstract object ParseFromByteArray(Type type, byte[] buf);
 
-        public sealed override void WriteValue(object val, BinaryBufferWriter writer, CodingContext context)
+        public sealed override void WriteValue(object val, BinaryBufferWriter writer)
         {
-            byte[] dat = ConvertToByteArray(val, context);
+            byte[] dat = ConvertToByteArray(val);
             byte[] len = GetLength(dat.Length);
             writer.WriteByteArray(len);
             writer.WriteByteArray(dat);
         }
 
-        public sealed override object ReadValue(Type targetType, BinaryBufferReader reader, CodingContext context)
+        public sealed override object ReadValue(Type targetType, BinaryBufferReader reader)
         {
             int len = ReadLength(reader);
             byte[] dat = reader.ReadByteArray(len).ToArray();
-            return ParseFromByteArray(targetType, dat, context);
+            return ParseFromByteArray(targetType, dat);
         }
     }
 }

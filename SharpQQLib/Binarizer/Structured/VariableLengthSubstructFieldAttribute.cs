@@ -3,8 +3,6 @@ using SharpQQ.Utils;
 using SharpQQ.Binarizer;
 using System.Linq;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public class VariableLengthSubstructFieldAttribute : VariableLengthFieldAttribute
@@ -14,23 +12,23 @@ namespace SharpQQ.Binarizer.Structured
 
         }
 
-        protected override byte[] ConvertToByteArray(object val, CodingContext context)
+        protected override byte[] ConvertToByteArray(object val)
         {
             if (!(val is BinaryPacket ba))
             {
                 throw new ArgumentException($"Parameter must be an IBinaryConvertible");
             }
             var writer = new BinaryBufferWriter();
-            ba.WriteTo(writer, context);
+            ba.WriteTo(writer);
             return writer.GetContent();
         }
 
-        protected override object ParseFromByteArray(Type targetType, byte[] buf, CodingContext context)
+        protected override object ParseFromByteArray(Type targetType, byte[] buf)
         {
             if (!typeof(BinaryPacket).IsAssignableFrom(targetType))
                 throw new ArgumentException($"Type {targetType.Name} does not implement IBinaryConvertible.");
             var val = (BinaryPacket)Activator.CreateInstance(targetType);
-            val.ParseFrom(new BinaryBufferReader(buf), context);
+            val.ParseFrom(new BinaryBufferReader(buf));
             return val;
         }
     }

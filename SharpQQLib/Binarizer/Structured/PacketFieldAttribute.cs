@@ -1,7 +1,5 @@
 using System;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public abstract class PacketFieldAttribute : Attribute
@@ -13,8 +11,8 @@ namespace SharpQQ.Binarizer.Structured
             this.Index = index;
         }
 
-        public abstract void WriteValue(object val, BinaryBufferWriter writer, CodingContext context);
+        public abstract void WriteValue(object val, BinaryBufferWriter writer);
 
-        public abstract object ReadValue(Type target, BinaryBufferReader reader, CodingContext context);
+        public abstract object ReadValue(Type target, BinaryBufferReader reader);
     }
 }

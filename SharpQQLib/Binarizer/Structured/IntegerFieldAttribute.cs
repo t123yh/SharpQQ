@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using SharpQQ.Utils;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public class IntegerFieldAttribute : PacketFieldAttribute
@@ -18,7 +16,7 @@ namespace SharpQQ.Binarizer.Structured
             this.Optional = optional;
         }
 
-        public override void WriteValue(object val, BinaryBufferWriter writer, CodingContext context)
+        public override void WriteValue(object val, BinaryBufferWriter writer)
         {
             if (val != null)
             {
@@ -42,7 +40,7 @@ namespace SharpQQ.Binarizer.Structured
             }
         }
 
-        public override object ReadValue(Type targetType, BinaryBufferReader reader, CodingContext context)
+        public override object ReadValue(Type targetType, BinaryBufferReader reader)
         {
             if (MyBitConverter.IntegerSizes.ContainsKey(targetType))
             {

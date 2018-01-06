@@ -4,26 +4,24 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public abstract class StructuredBinaryPacket : BinaryPacket
     {
         public virtual void Check() { }
 
-        public override void ParseFrom(BinaryBufferReader reader, CodingContext context)
+        public override void ParseFrom(BinaryBufferReader reader)
         {
             foreach(var prop in this.DataProperties)
             {
                 var attr = prop.GetCustomAttribute<PacketFieldAttribute>();
-                object val = attr.ReadValue(prop.PropertyType, reader, context);
+                object val = attr.ReadValue(prop.PropertyType, reader);
                 prop.SetValue(this, val);
             }
             Check();
         }
 
-        public override void WriteTo(BinaryBufferWriter writer, CodingContext context)
+        public override void WriteTo(BinaryBufferWriter writer)
         {
             Check();
             foreach (var prop in this.DataProperties)
@@ -31,7 +29,7 @@ namespace SharpQQ.Binarizer.Structured
                 Console.WriteLine("Writing to " + prop.Name);
                 var attr = prop.GetCustomAttribute<PacketFieldAttribute>();
                 object val = prop.GetValue(this);
-                attr.WriteValue(val, writer, context);
+                attr.WriteValue(val, writer);
             }
         }
 

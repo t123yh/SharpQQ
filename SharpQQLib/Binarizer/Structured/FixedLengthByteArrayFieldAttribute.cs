@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public class FixedLengthByteArrayFieldAttribute : PacketFieldAttribute
@@ -14,7 +12,7 @@ namespace SharpQQ.Binarizer.Structured
             this.Length = length;
         }
 
-        public override void WriteValue(object val, BinaryBufferWriter writer, CodingContext context)
+        public override void WriteValue(object val, BinaryBufferWriter writer)
         {
             if (!(val is byte[] ba))
             {
@@ -25,7 +23,7 @@ namespace SharpQQ.Binarizer.Structured
             writer.WriteByteArray(result);
         }
 
-        public override object ReadValue(Type target, BinaryBufferReader reader, CodingContext context)
+        public override object ReadValue(Type target, BinaryBufferReader reader)
         {
             if (target != typeof(byte[]))
                 throw new ArgumentException($"Unable to convert {target.Name} to byte array.");

@@ -1,8 +1,6 @@
 using System;
 using System.Text;
 
-using CodingContext = System.Collections.ObjectModel.ReadOnlyDictionary<string, dynamic>;
-
 namespace SharpQQ.Binarizer.Structured
 {
     public class VariableLengthByteArrayFieldAttribute : VariableLengthFieldAttribute
@@ -13,7 +11,7 @@ namespace SharpQQ.Binarizer.Structured
         {
         }
 
-        protected override byte[] ConvertToByteArray(object val, CodingContext context)
+        protected override byte[] ConvertToByteArray(object val)
         {
             if (val is string str)
                 return DefaultTextEncoding.GetBytes(str);
@@ -22,7 +20,7 @@ namespace SharpQQ.Binarizer.Structured
             throw new ArgumentException($"Parameter must be a byte array instead of {val.GetType().ToString()}.");
         }
 
-        protected override object ParseFromByteArray(Type targetType, byte[] buf, CodingContext context)
+        protected override object ParseFromByteArray(Type targetType, byte[] buf)
         {
             if (targetType == typeof(string))
                 return DefaultTextEncoding.GetString(buf);
