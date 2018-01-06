@@ -9,7 +9,7 @@ namespace SharpQQ.Protocol.Msf.Packets
         {
             if (this.SsoVersion != 10)
             {
-                throw new Exception("Incorrect SsoVersion, should be 10.");
+                throw new Exception($"Incorrect SsoVersion {this.SsoVersion}, should be 10.");
             }
         }
 
@@ -17,7 +17,7 @@ namespace SharpQQ.Protocol.Msf.Packets
         public int SsoVersion { get; set; } = 10;
 
         [IntegerField(2)]
-        public SsoEncryptionType Encryption { get; set; }
+        public SsoEncryptionType EncryptionType { get; set; }
 
         [IntegerField(3)]
         protected byte _AlwaysZero { get; set; }
