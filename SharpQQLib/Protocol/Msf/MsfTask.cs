@@ -14,4 +14,13 @@ namespace SharpQQ.Protocol.Msf
 
         public TaskCompletionSource<MsfResult> CompletionSource { get; set; }
     }
+    
+    public class MsfResult
+    {
+        public int ReturnCode { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public byte[] ResponsePayload { get; set; }
+    }
 }
