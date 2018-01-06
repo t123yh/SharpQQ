@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -23,6 +24,10 @@ namespace SharpQQ.Utils
             do
             {
                 int read = await client.GetStream().ReadAsync(data, pos, len - pos);
+                if (read == 0)
+                {
+                    throw new IOException("Stream closed, unable to read.");
+                }
                 pos += read;
             } while (pos < len);
 
