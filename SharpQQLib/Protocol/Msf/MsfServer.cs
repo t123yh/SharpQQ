@@ -170,7 +170,8 @@ namespace SharpQQ.Protocol.Msf
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                throw new Exception("Unable to establish a connection to MSF server.", ex);
+                throw new Exception("Unable to establish a connection to MSF server, " +
+                                    "probably because of a timeout or an incorrect server address.", ex);
             }
             
             this._connectedEvent.Set();
