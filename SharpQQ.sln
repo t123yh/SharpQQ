@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpQQLib", "SharpQQLib\SharpQQLib.csproj", "{03D090C8-EDE2-4A61-B8F2-D17086D111EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F58DDF73-D486-4B29-B56C-90A4417B2BA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{03D090C8-EDE2-4A61-B8F2-D17086D111EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03D090C8-EDE2-4A61-B8F2-D17086D111EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03D090C8-EDE2-4A61-B8F2-D17086D111EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
