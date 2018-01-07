@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
@@ -9,7 +11,7 @@ namespace SharpQQ.Utils
     {
         public static async Task WritePacketAsync(this TcpClient client, byte[] dat)
         {
-            byte[] lenBytes = MyBitConverter.GetBytesFromInt32(dat.Length, Endianness.Big);
+            byte[] lenBytes = MyBitConverter.GetBytesFromInt32(dat.Length + 4, Endianness.Big);
             await client.GetStream().WriteAsync(lenBytes, 0, lenBytes.Length);
             await client.GetStream().WriteAsync(dat, 0, dat.Length);
         }
@@ -17,8 +19,13 @@ namespace SharpQQ.Utils
         public static async Task<byte[]> ReadPacketAsync(this TcpClient client)
         {
             byte[] lenBytes = new byte[4];
-            await client.GetStream().ReadAsync(lenBytes, 0, lenBytes.Length);
-            int len = MyBitConverter.GetInt32(lenBytes, Endianness.Big);
+            int lenRead = await client.GetStream().ReadAsync(lenBytes, 0, lenBytes.Length);
+            if (lenRead == 0)
+            {
+                throw new IOException("Stream closed, unable to read length from stream.");
+            }
+
+            int len = MyBitConverter.GetInt32(lenBytes, Endianness.Big) - 4;
             byte[] data = new byte[len];
             int pos = 0;
             do
@@ -28,6 +35,7 @@ namespace SharpQQ.Utils
                 {
                     throw new IOException("Stream closed, unable to read.");
                 }
+
                 pos += read;
             } while (pos < len);
 
