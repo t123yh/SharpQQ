@@ -26,7 +26,6 @@ namespace SharpQQ.Binarizer.Structured
             Check();
             foreach (var prop in this.DataProperties)
             {
-                Console.WriteLine("Writing to " + prop.Name);
                 var attr = prop.GetCustomAttribute<PacketFieldAttribute>();
                 object val = prop.GetValue(this);
                 attr.WriteValue(val, writer);
