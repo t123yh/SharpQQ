@@ -28,7 +28,7 @@ namespace SharpQQ.Protocol.Msf
         private readonly AsyncProducerConsumerQueue<MsfTask> _waitingTasks = new AsyncProducerConsumerQueue<MsfTask>();
 
         public event EventHandler ConnectionFailed;
-        
+
         public long QQNumber { get; }
         public AccountAuthInfo AuthInfo { get; set; }
         public MsfGeneralInfo MsfInfo { get; }
@@ -153,7 +153,7 @@ namespace SharpQQ.Protocol.Msf
         public async Task ConnectAsync(int defaultTimeout = 5000)
         {
             this._baseClient?.Dispose();
-            
+
             this._baseClient = new TcpClient();
             this.CurrentCookie = BinaryUtils.UnifiedRandomBytes(4);
 
@@ -161,7 +161,13 @@ namespace SharpQQ.Protocol.Msf
             {
                 await this._baseClient.ConnectAsync(DefaultAddress, DefaultPort);
                 var cts = new CancellationTokenSource(defaultTimeout);
-                cts.Token.Register(() => this._baseClient.Dispose(), false);
+                cts.Token.Register(() =>
+                {
+                    if (!this._connectedEvent.IsSet)
+                    {
+                        this._baseClient.Dispose();
+                    }
+                }, false);
                 await this._baseClient.WritePacketAsync(new MsfNegotiationPacket().GetBinary());
                 var response = await this._baseClient.ReadPacketAsync();
                 var receivedNegotiationPacket = new MsfNegotiationPacket();
@@ -173,7 +179,7 @@ namespace SharpQQ.Protocol.Msf
                 throw new Exception("Unable to establish a connection to MSF server, " +
                                     "probably because of a timeout or an incorrect server address.", ex);
             }
-            
+
             this._connectedEvent.Set();
         }
     }
