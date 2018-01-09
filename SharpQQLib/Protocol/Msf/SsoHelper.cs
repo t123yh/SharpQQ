@@ -55,13 +55,13 @@ namespace SharpQQ.Protocol.Msf
                 Payload = payload
             }.GetBinary();
             var req = new SsoRequest() {QQNumber = qqNumber.ToString()};
-            if (NoEncryptionOperations.Contains(operationName))
+            if (NoEncryptionOperations.Contains(operationName.ToLowerInvariant()))
             {
                 req.EncryptionType = SsoEncryptionType.NotEncrypted;
                 req.D2 = new byte[0];
                 req.EncryptedContent = content;
             }
-            else if (ZeroEncryptionOperations.Contains(operationName))
+            else if (ZeroEncryptionOperations.Contains(operationName.ToLowerInvariant()))
             {
                 req.EncryptionType = SsoEncryptionType.EncryptedByZero;
                 req.D2 = new byte[0];
