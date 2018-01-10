@@ -1,13 +1,14 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpQQ.Protocol.Msf;
+using SharpQQ.Utils;
 
 namespace Tests
 {
     [TestClass]
     public class MsfServerTest
     {
-        private static readonly byte[] KSID = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8 };
+        private static readonly byte[] KSID = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 
         private static readonly MsfGeneralInfo GlobalMsfInfo = new MsfGeneralInfo()
         {
@@ -17,13 +18,17 @@ namespace Tests
             KSID = KSID,
             NetworkType = 1
         };
-        
+
 
         [TestMethod]
-        public async Task TestConnect()
+        public async Task TestHeartBeat()
         {
-            var server = new MsfServer(2260128230, GlobalMsfInfo, null);
-            await server.ConnectAsync();
+            using (var server = new MsfServer(2260128230, GlobalMsfInfo, null))
+            {
+                await server.ConnectAsync();
+                var result = await server.DoRequest("Heartbeat.Alive", new byte[0]);
+                Assert.AreEqual(result.ReturnCode, 0);
+            }
         }
     }
 }
