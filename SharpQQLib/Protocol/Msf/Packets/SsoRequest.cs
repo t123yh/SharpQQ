@@ -19,13 +19,13 @@ namespace SharpQQ.Protocol.Msf.Packets
         [IntegerField(2)]
         public SsoEncryptionType EncryptionType { get; set; }
 
-        [VariableLengthByteArrayField(3, PrependLengthType.Int16BE, PrependLengthTransform.IncludeLengthField)]
+        [VariableLengthByteArrayField(3, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public byte[] D2 { get; set; }
 
         [IntegerField(4)]
         protected byte _AlwaysZero { get; set; } = 0;
 
-        [VariableLengthByteArrayField(5, PrependLengthType.Int16BE, PrependLengthTransform.IncludeLengthField)]
+        [VariableLengthByteArrayField(5, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public string QQNumber { get; set; }
 
         [VariableLengthByteArrayField(6, PrependLengthType.None)]

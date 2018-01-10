@@ -22,7 +22,7 @@ namespace SharpQQ.Protocol.Msf.Packets
         [IntegerField(3)]
         protected byte _AlwaysZero { get; set; }
 
-        [VariableLengthByteArrayField(4, PrependLengthType.Int32BE, PrependLengthTransform.NoTransform)]
+        [VariableLengthByteArrayField(4, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public string QQNumber { get; set; }
 
         [VariableLengthByteArrayField(5, PrependLengthType.None)]

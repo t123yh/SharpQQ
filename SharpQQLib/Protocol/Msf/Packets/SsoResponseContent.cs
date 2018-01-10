@@ -7,7 +7,7 @@ namespace SharpQQ.Protocol.Msf.Packets
         [VariableLengthSubstructField(1, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public ResponseHead Header { get; set; }
 
-        [VariableLengthSubstructField(2, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
+        [VariableLengthByteArrayField(2, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public byte[] Payload { get; set; }
     }
 }
