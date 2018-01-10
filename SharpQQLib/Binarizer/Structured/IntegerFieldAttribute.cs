@@ -10,7 +10,8 @@ namespace SharpQQ.Binarizer.Structured
 
         public bool Optional { get; }
 
-        public IntegerFieldAttribute(int index, Endianness endianness = Endianness.Big, bool optional = false) : base(index)
+        public IntegerFieldAttribute(int index, Endianness endianness = Endianness.Big, bool optional = false) :
+            base(index)
         {
             this.Endianness = endianness;
             this.Optional = optional;
@@ -31,6 +32,7 @@ namespace SharpQQ.Binarizer.Structured
                 {
                     numVal = val;
                 }
+
                 writer.WriteByteArray(MyBitConverter.IntegerToBytes(numVal, this.Endianness));
             }
             else
@@ -42,20 +44,21 @@ namespace SharpQQ.Binarizer.Structured
 
         public override object ReadValue(Type targetType, BinaryBufferReader reader)
         {
-            if (MyBitConverter.IntegerSizes.ContainsKey(targetType))
+            bool isEnum = targetType.IsEnum;
+            var numericType = isEnum ? targetType.GetEnumUnderlyingType() : targetType;
+
+            if (MyBitConverter.IntegerSizes.ContainsKey(numericType))
             {
                 if (!reader.IsEndOfStream)
                 {
-                    if (targetType.IsEnum)
+                    byte[] data = reader.ReadByteArray(MyBitConverter.IntegerSizes[numericType]).ToArray();
+                    if (isEnum)
                     {
-                        Type numericType = targetType.GetEnumUnderlyingType();
-                        byte[] data = reader.ReadByteArray(MyBitConverter.IntegerSizes[numericType]).ToArray();
-                        object value = MyBitConverter.BytesToInteger(data, numericType, this.Endianness);
+                        var value = MyBitConverter.BytesToInteger(data, numericType, this.Endianness);
                         return Enum.ToObject(targetType, value);
                     }
                     else
                     {
-                        byte[] data = reader.ReadByteArray(MyBitConverter.IntegerSizes[targetType]).ToArray();
                         return MyBitConverter.BytesToInteger(data, targetType, this.Endianness);
                     }
                 }
@@ -69,7 +72,8 @@ namespace SharpQQ.Binarizer.Structured
             }
             else
             {
-                throw new ArgumentException($"Target must be one of the integer types instead of {targetType.FullName}");
+                throw new ArgumentException(
+                    $"Target must be one of the integer types instead of {targetType.FullName}");
             }
         }
     }
