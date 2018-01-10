@@ -14,15 +14,14 @@ using SharpQQ.Utils;
 
 namespace SharpQQ.Protocol.Msf
 {
-    public class MsfServer
+    public class MsfServer : IDisposable
     {
         private const string DefaultAddress = "msfxg.3g.qq.com";
         private const int DefaultPort = 14000;
 
-        public bool Connected => this._baseClient != null && this._baseClient.Connected;
+        // public bool Connected => this._baseClient != null && this._baseClient.Connected;
 
         private readonly Dictionary<int, MsfTask> _taskList = new Dictionary<int, MsfTask>();
-        private readonly AsyncManualResetEvent _connectedEvent;
         private TcpClient _baseClient;
         private readonly CancellationTokenSource _globalCancellationTokenSource;
         private readonly AsyncProducerConsumerQueue<MsfTask> _waitingTasks = new AsyncProducerConsumerQueue<MsfTask>();
@@ -33,6 +32,7 @@ namespace SharpQQ.Protocol.Msf
         public AccountAuthInfo AuthInfo { get; set; }
         public MsfGeneralInfo MsfInfo { get; }
         public byte[] CurrentCookie { get; private set; }
+        public bool Connected { get; private set; }
 
         public MsfServer(long qqNumber, MsfGeneralInfo msfInfo, AccountAuthInfo auth = null)
         {
@@ -40,7 +40,6 @@ namespace SharpQQ.Protocol.Msf
             this.AuthInfo = auth;
             this.MsfInfo = msfInfo;
             this._globalCancellationTokenSource = new CancellationTokenSource();
-            this._connectedEvent = new AsyncManualResetEvent(false);
         }
 
         #region Sequence
@@ -54,7 +53,7 @@ namespace SharpQQ.Protocol.Msf
 
         #endregion
 
-        public Task<MsfResult> DoRequest(string opName, byte[] data, int timeout = Timeout.Infinite)
+        public async Task<MsfResult> DoRequest(string opName, byte[] data, int timeout = Timeout.Infinite)
         {
             var task = new MsfTask
             {
@@ -63,7 +62,6 @@ namespace SharpQQ.Protocol.Msf
                 OperationName = opName,
                 Data = data
             };
-            this._waitingTasks.EnqueueAsync(task);
             _taskList.Add(task.Sequence, task);
             if (timeout != Timeout.Infinite)
             {
@@ -76,27 +74,29 @@ namespace SharpQQ.Protocol.Msf
                 }, false);
             }
 
-            return task.CompletionSource.Task;
+            await this._waitingTasks.EnqueueAsync(task);
+
+            return await task.CompletionSource.Task;
         }
 
 
         private async Task SendLoop()
         {
-            while (!_globalCancellationTokenSource.Token.IsCancellationRequested)
+            var cancellationToken = _globalCancellationTokenSource.Token;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await _connectedEvent.WaitAsync(_globalCancellationTokenSource.Token);
-                var task = await this._waitingTasks.DequeueAsync(_globalCancellationTokenSource.Token);
+                var task = await this._waitingTasks.DequeueAsync(cancellationToken);
 
                 try
                 {
-                    var rawData = SsoHelper.EncodeRequest(this.IncreaseSequence(), this.QQNumber, task.OperationName,
+                    var rawData = SsoHelper.EncodeRequest(task.Sequence, this.QQNumber, task.OperationName,
                         task.Data, this.CurrentCookie, this.MsfInfo, this.AuthInfo);
                     await this._baseClient.WritePacketAsync(rawData);
                 }
                 catch (IOException ex)
                 {
                     // Network error occurred, push it to queue again.
-                    await this._waitingTasks.EnqueueAsync(task, _globalCancellationTokenSource.Token);
+                    await this._waitingTasks.EnqueueAsync(task, cancellationToken);
                     HandleConnectionFailure();
                     continue;
                 }
@@ -110,9 +110,9 @@ namespace SharpQQ.Protocol.Msf
 
         private async Task ReceiveLoop()
         {
-            while (!_globalCancellationTokenSource.Token.IsCancellationRequested)
+            var cancellationToken = _globalCancellationTokenSource.Token;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await _connectedEvent.WaitAsync(_globalCancellationTokenSource.Token);
                 try
                 {
                     var packet = await this._baseClient.ReadPacketAsync();
@@ -145,42 +145,69 @@ namespace SharpQQ.Protocol.Msf
 
         private void HandleConnectionFailure()
         {
-            this._baseClient?.Dispose();
-            this._connectedEvent.Reset();
+            this.Disconnect();
             this.ConnectionFailed?.Invoke(this, new EventArgs());
         }
 
-        public async Task ConnectAsync(int defaultTimeout = 5000)
+        public void Disconnect()
+        {
+            this._baseClient?.Dispose();
+            this._globalCancellationTokenSource.Cancel();
+        }
+
+        public async Task ConnectAsync(int defaultTimeout = 1000000)
         {
             this._baseClient?.Dispose();
 
             this._baseClient = new TcpClient();
             this.CurrentCookie = BinaryUtils.UnifiedRandomBytes(4);
 
+            bool timeout = false;
+            var disposeCancellationTokenSouce = new CancellationTokenSource();
+            var cancellationTask = Task.Delay(defaultTimeout, disposeCancellationTokenSouce.Token);
+#pragma warning disable 4014
+            cancellationTask.ContinueWith(_ =>
+            {
+                timeout = true;
+                this._baseClient.Dispose();
+            }, TaskContinuationOptions.NotOnCanceled);
+#pragma warning restore 4014
+
             try
             {
                 await this._baseClient.ConnectAsync(DefaultAddress, DefaultPort);
-                var cts = new CancellationTokenSource(defaultTimeout);
-                cts.Token.Register(() =>
-                {
-                    if (!this._connectedEvent.IsSet)
-                    {
-                        this._baseClient.Dispose();
-                    }
-                }, false);
+
                 await this._baseClient.WritePacketAsync(new MsfNegotiationPacket().GetBinary());
                 var response = await this._baseClient.ReadPacketAsync();
                 var receivedNegotiationPacket = new MsfNegotiationPacket();
                 receivedNegotiationPacket.ParseFrom(response);
+
+                disposeCancellationTokenSouce.Cancel();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                throw new Exception("Unable to establish a connection to MSF server, " +
-                                    "probably because of a timeout or an incorrect server address.", ex);
+                if (timeout)
+                {
+                    throw new Exception("Msf server connection timed out.");
+                }
+                else
+                {
+                    disposeCancellationTokenSouce.Cancel();
+                    this._baseClient.Dispose();
+                    throw new Exception("Unable to establish a connection to MSF server, " +
+                                        "probably because of an incorrect server address.", ex);
+                }
             }
 
-            this._connectedEvent.Set();
+            var sendTask = SendLoop();
+            var receiveTask = ReceiveLoop();
+            // TODO: Deal with these two tasks. (Handle failure in loops)
+        }
+
+        public void Dispose()
+        {
+            _baseClient?.Dispose();
+            _globalCancellationTokenSource?.Dispose();
         }
     }
 }
