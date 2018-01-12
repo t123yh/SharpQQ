@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpQQ.Protocol.Msf.Packets;
+using SharpQQ.Binarizer;
 using SharpQQ.Utils;
 
 namespace Tests

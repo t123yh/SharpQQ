@@ -14,7 +14,7 @@ namespace SharpQQ.Binarizer.Structured
 
         protected override byte[] ConvertToByteArray(object val)
         {
-            if (!(val is BinaryPacket ba))
+            if (!(val is IBinaryConvertible ba))
             {
                 throw new ArgumentException($"Parameter must be an IBinaryConvertible");
             }
@@ -25,9 +25,9 @@ namespace SharpQQ.Binarizer.Structured
 
         protected override object ParseFromByteArray(Type targetType, byte[] buf)
         {
-            if (!typeof(BinaryPacket).IsAssignableFrom(targetType))
+            if (!typeof(IBinaryConvertible).IsAssignableFrom(targetType))
                 throw new ArgumentException($"Type {targetType.Name} does not implement IBinaryConvertible.");
-            var val = (BinaryPacket)Activator.CreateInstance(targetType);
+            var val = (IBinaryConvertible)Activator.CreateInstance(targetType);
             val.ParseFrom(new BinaryBufferReader(buf));
             return val;
         }

@@ -12,7 +12,7 @@ namespace SharpQQ.Binarizer.Structured
 
         public override void WriteValue(object val, BinaryBufferWriter writer)
         {
-            if (!(val is BinaryPacket ba))
+            if (!(val is IBinaryConvertible ba))
             {
                 throw new ArgumentException($"Parameter must be an IBinaryConvertible");
             }
@@ -21,9 +21,9 @@ namespace SharpQQ.Binarizer.Structured
 
         public override object ReadValue(Type targetType, BinaryBufferReader reader)
         {
-            if (!targetType.GetInterfaces().Contains(typeof(BinaryPacket)))
+            if (!targetType.GetInterfaces().Contains(typeof(IBinaryConvertible)))
                 throw new ArgumentException($"Type {targetType.Name} does not implement IBinaryConvertible.");
-            var val = (BinaryPacket)Activator.CreateInstance(targetType);
+            var val = (IBinaryConvertible)Activator.CreateInstance(targetType);
             val.ParseFrom(reader);
             return val;
         }

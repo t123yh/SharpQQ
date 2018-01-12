@@ -11,14 +11,14 @@ namespace Tests.Binarizer
     public class TlvTests
     {
         [TlvPacket(0x6666)]
-        private class TlvTestPacketA : StructuredBinaryPacket
+        private class TlvTestConvertibleA : StructuredBinaryConvertible
         {
             [IntegerField(1)]
             public uint TestField { get; set; } = 0;
         }
 
         [TlvPacket(0x2333)]
-        private class TlvTestPacketB : StructuredBinaryPacket
+        private class TlvTestConvertibleB : StructuredBinaryConvertible
         {
             [IntegerField(1)]
             public byte A { get; set; }
@@ -30,9 +30,9 @@ namespace Tests.Binarizer
         [TestMethod]
         public void TestEncode()
         {
-            var col = new TlvPacketCollection(0x12DF);
-            col.Add(new TlvTestPacketA() {TestField = 0xFEE1DEAD});
-            col.Add(new TlvTestPacketB() {A = 192, B = 60817});
+            var col = new TlvConvertibleCollection(0x12DF);
+            col.Add(new TlvTestConvertibleA() {TestField = 0xFEE1DEAD});
+            col.Add(new TlvTestConvertibleB() {A = 192, B = 60817});
             var result = col.GetBinary();
             Console.WriteLine(BinaryUtils.BinToHex(result));
             CollectionAssert.AreEqual(result, BinaryUtils.HexToBin("12DF000266660004FEE1DEAD23330003C0ED91"));
@@ -42,10 +42,10 @@ namespace Tests.Binarizer
         public void TestDecode()
         {
             var dat = BinaryUtils.HexToBin("12DF000266660004FEE1DEAD23330003C0ED91");
-            var col = new TlvPacketCollection();
+            var col = new TlvConvertibleCollection();
             col.ParseFrom(dat);
-            var p1 = col.Get<TlvTestPacketA>();
-            var p2 = col.Get<TlvTestPacketB>();
+            var p1 = col.Get<TlvTestConvertibleA>();
+            var p2 = col.Get<TlvTestConvertibleB>();
             Assert.AreEqual(p1.TestField, 0xFEE1DEAD);
             Assert.AreEqual(p2.A, 192);
             Assert.AreEqual(p2.B, 60817);

@@ -3,7 +3,7 @@ using SharpQQ.Binarizer.Structured;
 
 namespace SharpQQ.Protocol.Msf.Packets
 {
-    public class SsoResponse : StructuredBinaryPacket
+    public class SsoResponse : StructuredBinaryConvertible
     {
         public override void Check()
         {

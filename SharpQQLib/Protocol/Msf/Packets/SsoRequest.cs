@@ -11,7 +11,7 @@ namespace SharpQQ.Protocol.Msf.Packets
         EncryptedByZero = 2
     }
 
-    public class SsoRequest : StructuredBinaryPacket
+    public class SsoRequest : StructuredBinaryConvertible
     {
         [IntegerField(1)]
         public int SsoVersion { get; set; } = 10;

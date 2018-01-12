@@ -6,11 +6,11 @@ using System.Collections.ObjectModel;
 
 namespace SharpQQ.Binarizer.Structured
 {
-    public abstract class StructuredBinaryPacket : BinaryPacket
+    public abstract class StructuredBinaryConvertible : IBinaryConvertible
     {
         public virtual void Check() { }
 
-        public override void ParseFrom(BinaryBufferReader reader)
+        public void ParseFrom(BinaryBufferReader reader)
         {
             foreach(var prop in this.DataProperties)
             {
@@ -21,7 +21,7 @@ namespace SharpQQ.Binarizer.Structured
             Check();
         }
 
-        public override void WriteTo(BinaryBufferWriter writer)
+        public void WriteTo(BinaryBufferWriter writer)
         {
             Check();
             foreach (var prop in this.DataProperties)

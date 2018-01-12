@@ -10,6 +10,7 @@ using System.Threading;
 using SharpQQ.Protocol.Msf.Packets;
 using Nito.AsyncEx;
 using Org.BouncyCastle.Asn1.Cms;
+using SharpQQ.Binarizer;
 using SharpQQ.Utils;
 
 namespace SharpQQ.Protocol.Msf
@@ -177,9 +178,9 @@ namespace SharpQQ.Protocol.Msf
             {
                 await this._baseClient.ConnectAsync(DefaultAddress, DefaultPort);
 
-                await this._baseClient.WritePacketAsync(new MsfNegotiationPacket().GetBinary());
+                await this._baseClient.WritePacketAsync(new MsfNegotiationConvertible().GetBinary());
                 var response = await this._baseClient.ReadPacketAsync();
-                var receivedNegotiationPacket = new MsfNegotiationPacket();
+                var receivedNegotiationPacket = new MsfNegotiationConvertible();
                 receivedNegotiationPacket.ParseFrom(response);
 
                 disposeCancellationTokenSouce.Cancel();

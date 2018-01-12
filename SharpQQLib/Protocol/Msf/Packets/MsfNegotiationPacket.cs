@@ -4,7 +4,7 @@ using SharpQQ.Binarizer.Structured;
 
 namespace SharpQQ.Protocol.Msf.Packets
 {
-    public class MsfNegotiationPacket : StructuredBinaryPacket
+    public class MsfNegotiationConvertible : StructuredBinaryConvertible
     {
         private const int DefaultVersion = 20140601;
         private const string DefaultMsfString = "MSF";

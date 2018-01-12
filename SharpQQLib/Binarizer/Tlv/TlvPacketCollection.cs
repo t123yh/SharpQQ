@@ -9,24 +9,24 @@ using SharpQQ.Utils;
 
 namespace SharpQQ.Binarizer.Tlv
 {
-    public class TlvPacketCollection : BinaryPacket, IDictionary<short, byte[]>
+    public class TlvConvertibleCollection : IBinaryConvertible, IDictionary<short, byte[]>
     {
         public short Tag { get; set; } = -1;
         public readonly Dictionary<short, byte[]> _fields = new Dictionary<short, byte[]>();
 
-        public TlvPacketCollection()
+        public TlvConvertibleCollection()
         {
         }
 
-        public TlvPacketCollection(short tag)
+        public TlvConvertibleCollection(short tag)
         {
             this.Tag = tag;
         }
 
-        public void Add(BinaryPacket packet)
+        public void Add(IBinaryConvertible convertible)
         {
-            short tag = packet.GetType().GetCustomAttribute<TlvPacketAttribute>().Tag;
-            _fields.Add(tag, packet.GetBinary());
+            short tag = convertible.GetType().GetCustomAttribute<TlvPacketAttribute>().Tag;
+            _fields.Add(tag, convertible.GetBinary());
         }
 
         public void Add(short tag, byte[] dat)
@@ -34,7 +34,7 @@ namespace SharpQQ.Binarizer.Tlv
             _fields.Add(tag, dat);
         }
 
-        public T Get<T>() where T : BinaryPacket
+        public T Get<T>() where T : IBinaryConvertible
         {
             short tag = typeof(T).GetCustomAttribute<TlvPacketAttribute>().Tag;
             var val = _fields[tag];
@@ -43,7 +43,7 @@ namespace SharpQQ.Binarizer.Tlv
             return result;
         }
 
-        public override void ParseFrom(BinaryBufferReader reader)
+        public void ParseFrom(BinaryBufferReader reader)
         {
             this._fields.Clear();
             
@@ -60,7 +60,7 @@ namespace SharpQQ.Binarizer.Tlv
             }
         }
 
-        public override void WriteTo(BinaryBufferWriter writer)
+        public void WriteTo(BinaryBufferWriter writer)
         {
             writer.WriteInt16(this.Tag, Endianness.Big);
             writer.WriteInt16((short)this._fields.Count, Endianness.Big);

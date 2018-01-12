@@ -3,7 +3,7 @@ using SharpQQ.Binarizer.Structured;
 
 namespace SharpQQ.Protocol.Msf.Packets
 {
-    public class RequestHead : StructuredBinaryPacket
+    public class RequestHead : StructuredBinaryConvertible
     {
         [IntegerField(1)]
         public int Sequence { get; set; }

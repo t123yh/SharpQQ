@@ -3,7 +3,7 @@ using SharpQQ.Binarizer.Structured;
 
 namespace SharpQQ.Protocol.Msf.Packets
 {
-    public class SsoRequestContent : StructuredBinaryPacket
+    public class SsoRequestContent : StructuredBinaryConvertible
     {
         [VariableLengthSubstructField(1, PrependLengthType.Int32BE, PrependLengthTransform.IncludeLengthField)]
         public RequestHead Header { get; set; }
