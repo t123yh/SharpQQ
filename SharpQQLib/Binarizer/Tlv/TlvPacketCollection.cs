@@ -34,6 +34,15 @@ namespace SharpQQ.Binarizer.Tlv
             _fields.Add(tag, dat);
         }
 
+        public T Get<T>() where T : BinaryPacket
+        {
+            short tag = typeof(T).GetCustomAttribute<TlvPacketAttribute>().Tag;
+            var val = _fields[tag];
+            var result = Activator.CreateInstance<T>();
+            result.ParseFrom(val);
+            return result;
+        }
+
         public override void ParseFrom(BinaryBufferReader reader)
         {
             this._fields.Clear();
@@ -62,7 +71,7 @@ namespace SharpQQ.Binarizer.Tlv
                 writer.WriteByteArray(item.Value);
             }
         }
-
+        
         public IEnumerator<KeyValuePair<short, byte[]>> GetEnumerator()
         {
             return _fields.GetEnumerator();
