@@ -5,6 +5,11 @@ namespace SharpQQ.Utils
     public class MiscellaneousUtils
     {
         static Random _rnd = new Random();
+
+        internal static byte RandomByte()
+        {
+            return 0;
+        }
         
         internal static int UnifiedRandomInt()
         {
