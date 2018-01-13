@@ -1,4 +1,4 @@
-namespace SharpQQ.Protocol
+namespace SharpQQ
 {
     public class Constants
     {

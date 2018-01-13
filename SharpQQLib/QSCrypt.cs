@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace SharpQQ.Protocol
+namespace SharpQQ
 {
     public class QSCrypt
     {

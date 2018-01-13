@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace SharpQQ.Protocol
+namespace SharpQQ
 {
     public class TeaCrypt
     {
