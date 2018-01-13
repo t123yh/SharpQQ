@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using SharpQQ.Utils;
 
 namespace SharpQQ
 {
@@ -17,7 +18,7 @@ namespace SharpQQ
             uint[] result = new uint[keySize];
             for (int i = 0; i < keySize; i++)
             {
-                result[i] = BitConverter.ToUInt32(keyBytes.Skip(i * 4).Take(4).Reverse().ToArray(), 0);
+                result[i] =MyBitConverter.GetUInt32(keyBytes, Endianness.Big, i * 4);
             }
             return result;
         }
@@ -28,18 +29,21 @@ namespace SharpQQ
             {
                 throw new ArgumentException("Source length must be 8 bytes.");
             }
-            uint y = BitConverter.ToUInt32(src.Take(4).Reverse().ToArray(), 0),
-                z = BitConverter.ToUInt32(src.Skip(4).Take(4).Reverse().ToArray(), 0);
+            uint y = MyBitConverter.GetUInt32(src, Endianness.Big, 0),
+                z = MyBitConverter.GetUInt32(src, Endianness.Big, 4);
 
             return (y, z);
         }
 
         private static byte[] ToBytes(uint a, uint b)
         {
-            return BitConverter.GetBytes(a).Reverse().Concat(BitConverter.GetBytes(b).Reverse()).ToArray();
+            return MyBitConverter.IntegerToBytes(a, Endianness.Big)
+                .Concat(MyBitConverter.IntegerToBytes(b, Endianness.Big))
+                .ToArray();
         }
 
-        const uint TeaDelta = 0x9E3779B9;
+        private const uint TeaDelta = 0x9E3779B9;
+        
         public static byte[] DecryptBlock(byte[] cipherText, byte[] keyBytes)
         {
             uint[] key = GetIntegerKey(keyBytes);
