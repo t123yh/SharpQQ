@@ -10,22 +10,21 @@ namespace Tests
     [TestClass]
     public class TeaCryptTests
     {
-        private readonly byte[] Data = Encoding.ASCII.GetBytes("TooYoung");
-        private readonly byte[] Key = Encoding.UTF8.GetBytes("Sometimes naïve"); // 16 bytes long because `ï` is 2 bytes
-        private readonly byte[] Cipher = BinaryUtils.HexToBin("774522845C2D529A");
-        
-        [TestMethod]
-        public void TestEncrypt()
+        [DataTestMethod]
+        [DataRow("TooYoung", "Sometimes naïve", "774522845C2D529A")]
+        [DataRow("12345678", "1234567890ABCDEF", "6F129CC8EF171F21")]
+        [DataRow("2[fb.0dv", "&^ayd?f3. tcq,y7", "187A1214FE7F5134")]
+        public void TestEncryptDecrypt(string dataStr, string keyStr, string cipherHex)
         {
-            var encrypted = TeaCrypt.EncryptBlock(Data, Key);
-            CollectionAssert.AreEqual(encrypted, Cipher);
-        }
-
-        [TestMethod]
-        public void TestDecrypt()
-        {
-            var decrypted = TeaCrypt.DecryptBlock(Cipher, Key);
-            CollectionAssert.AreEqual(decrypted, Data);
+            byte[] data = Encoding.UTF8.GetBytes(dataStr);
+            byte[] key = Encoding.UTF8.GetBytes(keyStr);
+            byte[] cipher = BinaryUtils.HexToBin(cipherHex);
+            
+            var encrypted = TeaCrypt.EncryptBlock(data, key);
+            Console.WriteLine(BinaryUtils.BinToHex(encrypted));
+            var decrypted = TeaCrypt.DecryptBlock(cipher, key);
+            CollectionAssert.AreEqual(encrypted, cipher);
+            CollectionAssert.AreEqual(decrypted, data);
         }
     }
 }
