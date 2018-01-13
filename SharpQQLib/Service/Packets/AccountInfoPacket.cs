@@ -14,7 +14,7 @@ namespace SharpQQ.Service.Packets
             this.QQNumber = qqNumber;
             this.PasswordMD5 = passwordMD5;
             this.DeviceIdentifier = deviceId;
-            this.QQNumberStr = qqNumber;
+            this.QQNumberStr = qqNumber.ToString();
             this.Timestamp = timestamp;
         }
 
