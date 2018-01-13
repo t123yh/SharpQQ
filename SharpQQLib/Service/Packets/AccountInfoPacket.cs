@@ -49,7 +49,7 @@ namespace SharpQQ.Service.Packets
         public byte[] PasswordMD5 { get; set; }
 
         [FixedLengthByteArrayField(11, length: 16)]
-        public byte[] TGTGTKey { get; set; } = MiscellaneousUtils.UnifiedRandomBytes16();
+        public byte[] TGTGTKey { get; set; } = MiscellaneousUtils.UnifiedRandomBytes(16);
 
         [IntegerField(12)]
         public int Unknown1 { get; set; } = 0;

@@ -4,29 +4,40 @@ namespace SharpQQ.Utils
 {
     public class MiscellaneousUtils
     {
-        static Random _rnd = new Random();
+        private static Random _rnd = new Random();
 
         internal static byte RandomByte()
         {
+#if DEBUG
             return 0;
-        }
-        
-        internal static int UnifiedRandomInt()
-        {
-            return 0x12345678;
+#else
+            byte[] b = new byte[1];
+            return _rnd.Next(b);
+            return b[0];
+#endif
         }
 
-        internal static byte[] UnifiedRandomBytes16()
+        internal static int UnifiedRandomInt()
         {
-            return new byte[] { 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+#if DEBUG
+            return 0x12345678;
+#else
+            return _rnd.Next();
+#endif
         }
 
         internal static byte[] UnifiedRandomBytes(int length)
         {
             byte[] result = new byte[length];
+#if DEBUG
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = (byte) i;
+            }
+#else
             _rnd.NextBytes(result);
+#endif
             return result;
         }
-
     }
 }
