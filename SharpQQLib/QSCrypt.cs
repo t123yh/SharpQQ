@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using SharpQQ.Utils;
 
 namespace SharpQQ
 {
     public class QSCrypt
     {
+        // TODO: Use IReadOnlyCollection would cause trouble, so let's use byte[] for now
         public static readonly byte[] ZeroKey = Enumerable.Repeat((byte)0, 16).ToArray();
         
         public static int GetEncryptedSize(int originalSize)
@@ -15,42 +17,34 @@ namespace SharpQQ
             return totalSize + (remainder > 0 ? 8 - remainder : 0);
         }
 
-        static Random randomGenerator = new Random();
-
-        static byte getRandomByte()
-        {
-            // return (byte)(randomGenerator.Next() % 255);
-            return 0;
-        }
-
-        static byte XOR(byte a, byte b)
+        private static byte XOR(byte a, byte b)
         {
             return (byte)(a ^ b);
         }
 
-        static byte[] GenerateByteArray(int len, byte initial = 0)
+        private static byte[] GenerateByteArray(int len, byte initial = 0)
         {
             return Enumerable.Repeat(initial, len).ToArray();
         }
 
-        const int TeaBlockSize = TeaCrypt.BlockSize;
-
-        static byte[] TeaDecryptStream(byte[] cipherText, byte[] key)
+        private const int BlockSize = TeaCrypt.BlockSize;
+        
+        private static byte[] TeaDecryptStream(byte[] cipherText, byte[] key)
         {
-            if (cipherText.Length % TeaBlockSize != 0)
+            if (cipherText.Length % TeaCrypt.BlockSize != 0)
             {
-                throw new ArgumentException($"Cipher text length must be a multiple of block size ${TeaBlockSize}, given {cipherText.Length}.");
+                throw new ArgumentException($"Cipher text length must be a multiple of block size ${BlockSize}, given {cipherText.Length}.");
             }
 
             List<byte> plainText = new List<byte>(cipherText.Length);
-            byte[] lastCipherText = GenerateByteArray(TeaBlockSize),
-                lastInputText = GenerateByteArray(TeaBlockSize);
+            byte[] lastCipherText = GenerateByteArray(BlockSize),
+                lastInputText = GenerateByteArray(BlockSize);
 
-            for (int i = 0; i < cipherText.Length / TeaBlockSize; i++)
+            for (int i = 0; i < cipherText.Length / BlockSize; i++)
             {
                 var encryptedBlock = cipherText
-                    .Skip(i * TeaBlockSize)
-                    .Take(TeaBlockSize).ToArray();
+                    .Skip(i * BlockSize)
+                    .Take(BlockSize).ToArray();
 
                 var cipherBlock = encryptedBlock.Zip(lastInputText, XOR).ToArray();
                 var decrypted = TeaCrypt.DecryptBlock(cipherBlock, key).ToArray();
@@ -63,21 +57,21 @@ namespace SharpQQ
             return plainText.ToArray();
         }
 
-        static byte[] TeaEncryptStream(byte[] plainText, byte[] key)
+        private static byte[] TeaEncryptStream(byte[] plainText, byte[] key)
         {
-            if (plainText.Length % TeaBlockSize != 0)
+            if (plainText.Length % BlockSize != 0)
             {
-                throw new ArgumentException($"Plain data length must be a multiple of block size ${TeaBlockSize}, given {plainText.Length}.");
+                throw new ArgumentException($"Plain data length must be a multiple of block size ${BlockSize}, given {plainText.Length}.");
             }
 
             List<byte> cipherText = new List<byte>(plainText.Length);
-            byte[] lastCipherText = GenerateByteArray(TeaBlockSize),
-                lastInputText = GenerateByteArray(TeaBlockSize);
-            for (int i = 0; i < plainText.Length / TeaBlockSize; i++)
+            byte[] lastCipherText = GenerateByteArray(BlockSize),
+                lastInputText = GenerateByteArray(BlockSize);
+            for (int i = 0; i < plainText.Length / BlockSize; i++)
             {
                 var input = plainText
-                    .Skip(i * TeaBlockSize)
-                    .Take(TeaBlockSize)
+                    .Skip(i * BlockSize)
+                    .Take(BlockSize)
                     .Zip(lastCipherText, XOR)
                     .ToArray();
 
@@ -98,7 +92,7 @@ namespace SharpQQ
             int paddingSize = remSize != 0 ? 8 - remSize : 0;
             byte[] padding = Enumerable
                 .Repeat(0, paddingSize + 3)
-                .Select(x => getRandomByte())
+                .Select(x => MiscellaneousUtils.RandomByte())
                 .ToArray();
             // The last 8 bits of the first padding byte indicates the padding size.
             padding[0] = (byte)(padding[0] & 0xF8 | paddingSize);
