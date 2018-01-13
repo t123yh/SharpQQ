@@ -13,7 +13,7 @@ namespace SharpQQ
             const int keySize = 4;
             if (keyBytes.Length != keySize * 4)
             {
-                throw new ArgumentException("keyBytes must be 16 bytes long.");
+                throw new ArgumentException("keyBytes must be 16 bytes long.", "keyBytes");
             }
             uint[] result = new uint[keySize];
             for (int i = 0; i < keySize; i++)
@@ -27,7 +27,7 @@ namespace SharpQQ
         {
             if (src.Length != 8)
             {
-                throw new ArgumentException("Source length must be 8 bytes.");
+                throw new ArgumentException("Source length must be 8 bytes.", "src");
             }
             uint y = MyBitConverter.GetUInt32(src, Endianness.Big, 0),
                 z = MyBitConverter.GetUInt32(src, Endianness.Big, 4);
