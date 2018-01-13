@@ -17,33 +17,11 @@ namespace SharpQQ.Utils
 
     public static class BinaryUtils
     {
-        internal static int UnifiedRandomInt()
-        {
-            return 0x12345678;
-        }
-
-        internal static byte[] UnifiedRandomBytes16()
-        {
-            return new byte[] { 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-        }
-
-        internal static byte[] UnifiedRandomBytes(int length)
-        {
-            byte[] result = new byte[length];
-            _rnd.NextBytes(result);
-            return result;
-        }
-
-
         static MD5 _md5 = new MD5CryptoServiceProvider();
-
-        static Random _rnd = new Random();
 
         public static byte[] ComputeMD5(byte[] src)
         {
-            // Console.
             byte[] ret = _md5.ComputeHash(src);
-            Console.WriteLine("Computing MD5, src = " + BinaryUtils.BinToHex(src) + ", ret = " + BinaryUtils.BinToHex(ret));
             return ret;
         }
 

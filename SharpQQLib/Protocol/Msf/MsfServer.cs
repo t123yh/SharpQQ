@@ -161,7 +161,7 @@ namespace SharpQQ.Protocol.Msf
             this._baseClient?.Dispose();
 
             this._baseClient = new TcpClient();
-            this.CurrentCookie = BinaryUtils.UnifiedRandomBytes(4);
+            this.CurrentCookie = MiscellaneousUtils.UnifiedRandomBytes(4);
 
             bool timeout = false;
             var disposeCancellationTokenSouce = new CancellationTokenSource();
