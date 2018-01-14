@@ -4,7 +4,7 @@ using SharpQQ.Utils;
 
 namespace SharpQQ.Service.Packets
 {
-    [TlvPacket(1)]
+    [TlvPacketContent(1)]
     public class Tlv_T1 : StructuredBinaryConvertible
     {
         public Tlv_T1()

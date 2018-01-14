@@ -10,14 +10,14 @@ namespace Tests.Binarizer
     [TestClass]
     public class TlvTests
     {
-        [TlvPacket(0x6666)]
+        [TlvPacketContent(0x6666)]
         private class TlvTestConvertibleA : StructuredBinaryConvertible
         {
             [IntegerField(1)]
             public uint TestField { get; set; } = 0;
         }
 
-        [TlvPacket(0x2333)]
+        [TlvPacketContent(0x2333)]
         private class TlvTestConvertibleB : StructuredBinaryConvertible
         {
             [IntegerField(1)]

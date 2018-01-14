@@ -3,11 +3,11 @@ using SharpQQ.Binarizer.Structured;
 
 namespace SharpQQ.Binarizer.Tlv
 {
-    public class TlvPacketAttribute : Attribute
+    public class TlvPacketContent : Attribute
     {
         public short Tag { get; set; }
 
-        public TlvPacketAttribute(short tag)
+        public TlvPacketContent(short tag)
         {
             this.Tag = tag;
         }

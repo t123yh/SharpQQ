@@ -4,7 +4,7 @@ using SharpQQ.Binarizer.Tlv;
 namespace SharpQQ.Service.Packets
 {
     // b.bs
-    [TlvPacket(0x18)]
+    [TlvPacketContent(0x18)]
     public class Tlv_T18 : StructuredBinaryConvertible
     {
         public Tlv_T18(int qqNumber)
