@@ -56,6 +56,9 @@ namespace SharpQQ.Binarizer.Tlv
 
         public void WriteTo(BinaryBufferWriter writer)
         {
+            if (this.Tag == -1)
+                throw new Exception("You should set a Tag for TlvPacketCollection before encoding it.");
+            
             writer.WriteInt16(this.Tag, Endianness.Big);
             writer.WriteInt16((short)base.Count, Endianness.Big);
             foreach (var item in this)
