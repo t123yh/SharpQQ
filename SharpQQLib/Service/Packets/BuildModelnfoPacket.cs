@@ -6,6 +6,15 @@ namespace SharpQQ.Service.Packets
     [TlvPacketContent(0x16e)]
     public class BuildModelnfoPacket : StructuredBinaryConvertible
     {
+        public BuildModelnfoPacket()
+        {
+        }
+
+        public BuildModelnfoPacket(string model)
+        {
+            this.BuildModel = model;
+        }
+
         [VariableLengthByteArrayField(1, PrependLengthType.Int16BE)]
         public string BuildModel { get; set; }
     }
