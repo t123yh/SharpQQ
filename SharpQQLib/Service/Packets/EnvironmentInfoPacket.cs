@@ -3,7 +3,7 @@ using SharpQQ.Binarizer.Tlv;
 
 namespace SharpQQ.Service.Packets
 {
-    [TlvPacketContent(0x144)]
+    // Tlv Packet Id: 0x144 (encrypted)
     public class EnvironmentInfoPacket : StructuredBinaryConvertible
     {
         [IntegerField(1)]
