@@ -12,7 +12,27 @@ namespace SharpQQ.Binarizer.Tlv
     // Use `Find Usages` function of your IDE to discover use cases of these two classes.
     public class TlvPacket<T> : IBinaryConvertible where T : IBinaryConvertible, new()
     {
+        public static implicit operator TlvPacket<T>(T src)
+        {
+            return new TlvPacket<T>(src);
+        }
+
+        public static implicit operator T(TlvPacket<T> src)
+        {
+            return src.Content;
+        }
+        
         public T Content { get; set; }
+        
+        public TlvPacket()
+        {
+            this.Content = new T();
+        }
+
+        public TlvPacket(T data)
+        {
+            this.Content = data;
+        }
 
         public static short Tag => typeof(T).GetCustomAttribute<TlvPacketContent>().Tag;
 
@@ -24,7 +44,6 @@ namespace SharpQQ.Binarizer.Tlv
             
             var length = reader.ReadInt16(Endianness.Big);
             var content = reader.ReadByteArray(length).ToArray();
-            this.Content = new T();
             this.Content.ParseFrom(content);
         }
 
