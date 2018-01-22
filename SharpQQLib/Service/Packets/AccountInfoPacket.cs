@@ -6,7 +6,6 @@ using PrependLengthType = SharpQQ.Binarizer.Structured.PrependLengthType;
 namespace SharpQQ.Service.Packets
 {
     // oicq.wlogin_sdk.b.i
-    [TlvPacketContent(262)]
     public class AccountInfoPacket : StructuredBinaryConvertible
     {
         public AccountInfoPacket(long qqNumber, byte[] passwordMD5, byte[] deviceId, int timestamp)
