@@ -244,7 +244,7 @@ namespace SharpQQ.Protocol.Jce
 
         public void writeStringByte(string s, int tag)
         {
-            byte[] by = BinaryUtils.HexToBin(s);
+            byte[] by = s.ToBin();
             reserve(10 + by.Length);
             if (by.Length > 255)
             {
@@ -283,7 +283,7 @@ namespace SharpQQ.Protocol.Jce
         public void writeByteString(string s, int tag)
         {
             reserve(10 + s.Length);
-            byte[] by = BinaryUtils.HexToBin(s);
+            byte[] by = s.ToBin();
             if (by.Length > 255)
             {
                 writeHead((byte)JceStructType.STRING4, tag);

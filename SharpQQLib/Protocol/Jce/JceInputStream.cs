@@ -556,7 +556,7 @@ namespace SharpQQ.Protocol.Jce
 
                                 byte[] ss = new byte[len];
                                 ss = br.ReadBytes(len);
-                                s = BinaryUtils.BinToHex(ss);
+                                s = ss.ToHex();
                             }
                         }
                         break;
@@ -573,7 +573,7 @@ namespace SharpQQ.Protocol.Jce
 
                                 byte[] ss = new byte[len];
                                 ss = br.ReadBytes(len);
-                                s = BinaryUtils.BinToHex(ss);
+                                s = ss.ToHex();
                             }
                         }
                         break;

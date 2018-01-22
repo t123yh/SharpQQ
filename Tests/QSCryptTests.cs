@@ -23,7 +23,7 @@ namespace Tests
         {
             byte[] dat = Encoding.UTF8.GetBytes(plainText);
             byte[] encrypted = QSCrypt.Encrypt(dat, Key);
-            Console.WriteLine(BinaryUtils.BinToHex(encrypted));
+            Console.WriteLine(encrypted.ToHex());
             byte[] decrypted = QSCrypt.Decrypt(encrypted, Key);
             CollectionAssert.AreEqual(dat, decrypted);
         }
@@ -33,7 +33,7 @@ namespace Tests
         [DataRow("闷声大发财", "4366DF443C31B0EF2E16E3C113CE897138B3A2464D23E9B83A3783C6B7CD5714")]
         public void TestDecrypt(string expectedPlainText, string cipherHex)
         {
-            byte[] decrypted = QSCrypt.Decrypt(BinaryUtils.HexToBin(cipherHex), Key);
+            byte[] decrypted = QSCrypt.Decrypt(cipherHex.ToBin(), Key);
             byte[] plain = Encoding.UTF8.GetBytes(expectedPlainText);
             CollectionAssert.AreEqual(decrypted, plain);
         }

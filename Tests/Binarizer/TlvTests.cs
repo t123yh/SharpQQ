@@ -34,14 +34,14 @@ namespace Tests.Binarizer
             col.Add(new TlvTestConvertibleA() {TestField = 0xFEE1DEAD});
             col.Add(new TlvTestConvertibleB() {A = 192, B = 60817});
             var result = col.GetBinary();
-            Console.WriteLine(BinaryUtils.BinToHex(result));
-            CollectionAssert.AreEqual(result, BinaryUtils.HexToBin("12DF000266660004FEE1DEAD23330003C0ED91"));
+            Console.WriteLine(BinaryUtils.ToHex(result));
+            CollectionAssert.AreEqual(result, "12DF000266660004FEE1DEAD23330003C0ED91".ToBin());
         }
 
         [TestMethod]
         public void TestDecode()
         {
-            var dat = BinaryUtils.HexToBin("12DF000266660004FEE1DEAD23330003C0ED91");
+            var dat = "12DF000266660004FEE1DEAD23330003C0ED91".ToBin();
             var col = new TlvConvertibleCollection();
             col.ParseFrom(dat);
             var p1 = col.Get<TlvTestConvertibleA>();

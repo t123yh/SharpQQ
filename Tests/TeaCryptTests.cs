@@ -18,10 +18,10 @@ namespace Tests
         {
             byte[] data = Encoding.UTF8.GetBytes(dataStr);
             byte[] key = Encoding.UTF8.GetBytes(keyStr);
-            byte[] cipher = BinaryUtils.HexToBin(cipherHex);
+            byte[] cipher = cipherHex.ToBin();
             
             var encrypted = TeaCrypt.EncryptBlock(data, key);
-            Console.WriteLine(BinaryUtils.BinToHex(encrypted));
+            Console.WriteLine(encrypted.ToHex());
             var decrypted = TeaCrypt.DecryptBlock(cipher, key);
             CollectionAssert.AreEqual(encrypted, cipher);
             CollectionAssert.AreEqual(decrypted, data);
