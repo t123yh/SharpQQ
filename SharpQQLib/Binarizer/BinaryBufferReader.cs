@@ -41,7 +41,7 @@ namespace SharpQQ.Binarizer
         private void EnsureSufficient(int length)
         {
             if(this.RemainingLength < length)
-                throw new IndexOutOfRangeException("Not enough bytes to read.");
+                throw new BinarizerException("Not enough bytes to read.");
         }
 
         public byte PeekByte()

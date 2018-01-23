@@ -65,7 +65,7 @@ namespace SharpQQ.Binarizer.Structured
                 else
                 {
                     if (!this.Optional)
-                        throw new ArgumentException("Unable to read from stream.");
+                        throw new BinarizerException("Unable to read from stream for a non-optional field.");
                     else
                         return null;
                 }
