@@ -76,6 +76,8 @@ namespace SharpQQ.Binarizer.Tlv
                 short subTag = reader.ReadInt16(Endianness.Big);
                 short subLength = reader.ReadInt16(Endianness.Big);
                 byte[] dat = reader.ReadByteArray(subLength).ToArray();
+                if (this.ContainsKey(subTag))
+                    continue; // Data with duplicate keys do exist in QQ. I don't why. Let's just ignore it.
                 this.Add(subTag, dat);
             }
         }
