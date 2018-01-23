@@ -5,7 +5,7 @@ namespace SharpQQ.Binarizer.Structured
 {
     public class FixedLengthByteArrayFieldAttribute : PacketFieldAttribute
     {
-        public int Length { get; set; }
+        public int Length { get; }
 
         public FixedLengthByteArrayFieldAttribute(int index, int length) : base(index)
         {
@@ -16,7 +16,7 @@ namespace SharpQQ.Binarizer.Structured
         {
             if (!(val is byte[] ba))
             {
-                throw new ArgumentException($"Parameter must be a byte array instead of {val.GetType().ToString()}.");
+                throw new ArgumentException($"Parameter must be a byte array instead of {val.GetType().FullName}.");
             }
             byte[] result = new byte[this.Length];
             Array.Copy(ba, result, Math.Min(this.Length, ba.Length));
@@ -26,7 +26,7 @@ namespace SharpQQ.Binarizer.Structured
         public override object ReadValue(Type target, BinaryBufferReader reader)
         {
             if (target != typeof(byte[]))
-                throw new ArgumentException($"Unable to convert {target.Name} to byte array.");
+                throw new ArgumentException($"Unable to convert {target.FullName} to byte array.");
             return reader.ReadByteArray(this.Length).ToArray();
         }
     }

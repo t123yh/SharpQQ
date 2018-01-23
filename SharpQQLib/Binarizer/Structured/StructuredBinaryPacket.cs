@@ -15,7 +15,7 @@ namespace SharpQQ.Binarizer.Structured
             foreach(var prop in this.DataProperties)
             {
                 var attr = prop.GetCustomAttribute<PacketFieldAttribute>();
-                object val = attr.ReadValue(prop.PropertyType, reader);
+                var val = attr.ReadValue(prop.PropertyType, reader);
                 prop.SetValue(this, val);
             }
             Check();

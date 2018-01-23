@@ -21,11 +21,11 @@ namespace SharpQQ.Binarizer.Structured
         {
             if (val != null)
             {
-                Type valType = val.GetType();
+                var valType = val.GetType();
                 object numVal;
                 if (valType.IsEnum)
                 {
-                    Type underlying = valType.GetEnumUnderlyingType();
+                    var underlying = valType.GetEnumUnderlyingType();
                     numVal = Convert.ChangeType(val, underlying);
                 }
                 else

@@ -8,7 +8,7 @@ namespace SharpQQ.Binarizer
     // This class was inspired by ByteBuffer
     public class BinaryBufferReader
     {
-        byte[] _baseBuffer;
+        private byte[] _baseBuffer;
 
         public int Position { get; set; }
 
@@ -22,21 +22,17 @@ namespace SharpQQ.Binarizer
 
         public BinaryBufferReader Clone()
         {
-            var target = new BinaryBufferReader();
-            target._baseBuffer = this._baseBuffer;
-            target.Position = this.Position;
+            var target = new BinaryBufferReader
+            {
+                _baseBuffer = this._baseBuffer,
+                Position = this.Position
+            };
             return target;
         }
 
-        public bool IsEndOfStream
-        {
-            get { return this.Position == this._baseBuffer.Length; }
-        }
+        public bool IsEndOfStream => this.Position == this._baseBuffer.Length;
 
-        public int RemainingLength
-        {
-            get { return this._baseBuffer.Length - this.Position; }
-        }
+        public int RemainingLength => this._baseBuffer.Length - this.Position;
 
         private void EnsureSufficient(int length)
         {

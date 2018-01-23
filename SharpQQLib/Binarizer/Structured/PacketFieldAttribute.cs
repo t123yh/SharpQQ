@@ -6,7 +6,7 @@ namespace SharpQQ.Binarizer.Structured
     {
         public int Index { get; }
 
-        public PacketFieldAttribute(int index)
+        protected PacketFieldAttribute(int index)
         {
             this.Index = index;
         }
