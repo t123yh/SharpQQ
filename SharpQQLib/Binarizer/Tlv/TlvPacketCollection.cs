@@ -24,13 +24,13 @@ namespace SharpQQ.Binarizer.Tlv
 
         public void Add(IBinaryConvertible convertible)
         {
-            short tag = convertible.GetType().GetCustomAttribute<TlvPacketContent>().Tag;
+            short tag = convertible.GetType().GetCustomAttribute<TlvPacketContentAttribute>().Tag;
             base.Add(tag, convertible.GetBinary());
         }
 
         public T Get<T>() where T : IBinaryConvertible
         {
-            short tag = typeof(T).GetCustomAttribute<TlvPacketContent>().Tag;
+            short tag = typeof(T).GetCustomAttribute<TlvPacketContentAttribute>().Tag;
             var val = base[tag];
             var result = Activator.CreateInstance<T>();
             result.ParseFrom(val);

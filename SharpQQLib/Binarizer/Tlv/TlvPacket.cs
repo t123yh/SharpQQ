@@ -34,7 +34,7 @@ namespace SharpQQ.Binarizer.Tlv
             this.Content = data;
         }
 
-        public static short Tag => typeof(T).GetCustomAttribute<TlvPacketContent>().Tag;
+        public static short Tag => typeof(T).GetCustomAttribute<TlvPacketContentAttribute>().Tag;
 
         public void ParseFrom(BinaryBufferReader reader)
         {
