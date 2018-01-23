@@ -98,7 +98,7 @@ namespace SharpQQ.Binarizer.Tlv
 
     public class NotTlvPacketException : Exception
     {
-        public Type TargetType { get; set; }
+        public Type TargetType { get; }
 
         public NotTlvPacketException(Type type) : base($"{type.FullName} doesn't have a TlvPacketContent Attribute.")
         {
