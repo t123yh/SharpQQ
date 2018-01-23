@@ -128,13 +128,18 @@ namespace SharpQQ.Service
             const short A2Tag = 266;
             const short D2Tag = 323;
             const short KeyTag = 773;
-            var account = new QQAccount();
-            account.Auth.A2 = dataCCollection[A2Tag];
-            account.Auth.D2 = dataCCollection[D2Tag];
-            account.Auth.EncryptKey = dataCCollection[KeyTag];
-
             var userInfo = dataCCollection.Get<UserInfoPacket>();
-            account.Nickname = userInfo.Nickname;
+            
+            var account = new QQAccount
+            {
+                Auth =
+                {
+                    A2 = dataCCollection[A2Tag],
+                    D2 = dataCCollection[D2Tag],
+                    EncryptKey = dataCCollection[KeyTag]
+                },
+                NickName = userInfo.Nickname
+            };
 
             return account;
         }

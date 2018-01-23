@@ -8,6 +8,6 @@ namespace SharpQQ.Service
 
         public AccountAuthInfo Auth { get; set; }  = new AccountAuthInfo();
         
-        public string Nickname { get; set; }
+        public string NickName { get; set; }
     }
 }
