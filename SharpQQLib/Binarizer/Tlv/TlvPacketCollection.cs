@@ -36,13 +36,13 @@ namespace SharpQQ.Binarizer.Tlv
         public void Add(IBinaryConvertible convertible)
         {
             short tag = GetTag(convertible.GetType());
-            base.Add(tag, convertible.GetBinary());
+            this.Add(tag, convertible.GetBinary());
         }
 
         public T Get<T>() where T : IBinaryConvertible
         {
             short tag = GetTag(typeof(T));
-            var val = base[tag];
+            var val = this[tag];
             var result = Activator.CreateInstance<T>();
             result.ParseFrom(val);
             return result;
@@ -51,7 +51,7 @@ namespace SharpQQ.Binarizer.Tlv
         public bool TryGet<T>(out T val) where T : IBinaryConvertible
         {
             short tag = GetTag(typeof(T));
-            if (base.ContainsKey(tag))
+            if (this.ContainsKey(tag))
             {
                 val = Get<T>();
                 return true;
@@ -65,7 +65,7 @@ namespace SharpQQ.Binarizer.Tlv
 
         public void ParseFrom(BinaryBufferReader reader)
         {
-            base.Clear();
+            this.Clear();
 
             short tag = reader.ReadInt16(Endianness.Big);
             this.Tag = tag;
@@ -76,7 +76,7 @@ namespace SharpQQ.Binarizer.Tlv
                 short subTag = reader.ReadInt16(Endianness.Big);
                 short subLength = reader.ReadInt16(Endianness.Big);
                 byte[] dat = reader.ReadByteArray(subLength).ToArray();
-                base.Add(subTag, dat);
+                this.Add(subTag, dat);
             }
         }
 
@@ -86,7 +86,7 @@ namespace SharpQQ.Binarizer.Tlv
                 throw new Exception("You should set a Tag for TlvPacketCollection before encoding it.");
 
             writer.WriteInt16(this.Tag, Endianness.Big);
-            writer.WriteInt16((short) base.Count, Endianness.Big);
+            writer.WriteInt16((short) this.Count, Endianness.Big);
             foreach (var item in this)
             {
                 writer.WriteInt16(item.Key, Endianness.Big); // Tag
