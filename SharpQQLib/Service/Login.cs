@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Crypto;
@@ -24,13 +25,40 @@ namespace SharpQQ.Service
             public byte[] DeviceIdentifier;
         }
 
-        public static (byte[], byte[], byte[], IBasicAgreement) GenerateLoginRequest(long qqNumber, string IMEI, byte[] KSID,
+        private class QQKey
+        {
+            private AsymmetricCipherKeyPair KeyPair { get; }
+            private IBasicAgreement Agreement { get; }
+
+            public byte[] PublicKeyData => ((ECPublicKeyParameters) KeyPair.Public).Q.GetEncoded();
+
+            public QQKey()
+            {
+                var ecparam = SecNamedCurves.GetByOid(SecObjectIdentifiers.SecP192k1);
+                var domain = new ECDomainParameters(ecparam.Curve, ecparam.G, ecparam.N);
+                var rnd = new SecureRandom();
+                rnd.SetSeed(MiscellaneousUtils.UnifiedRandomBytes(10));
+                var gen = new ECKeyPairGenerator();
+                gen.Init(new ECKeyGenerationParameters(domain, rnd));
+                this.KeyPair = gen.GenerateKeyPair();
+                this.Agreement = AgreementUtilities.GetBasicAgreement("ECDH");
+                Agreement.Init(this.KeyPair.Private);
+            }
+
+            public byte[] CalculateQSKey(byte[] peerPublicKey)
+            {
+                var publicKey = PublicKeyFactory.CreateKey(peerPublicKey);
+                var sharedSecret = Agreement.CalculateAgreement(publicKey);
+                return sharedSecret.ToByteArrayUnsigned().ComputeMD5();
+            }
+        }
+
+        public static (TlvConvertibleCollection, byte[]) GenerateLoginRequest(long qqNumber, string IMEI,
+            byte[] KSID,
             byte[] passwordMD5, DeviceInfo deviceInfo)
         {
             long timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            // ------------------------------------
-            // Create login TLV collection
             var accountInfo =
                 new AccountInfoPacket(qqNumber, passwordMD5, deviceInfo.DeviceIdentifier, (int) timestamp);
             var accountEncryptionKey = passwordMD5.Concat(MyBitConverter.GetBytesFromInt64(qqNumber, Endianness.Big))
@@ -41,7 +69,7 @@ namespace SharpQQ.Service
             {
                 BuildModelInfo = new BuildModelnfoPacket(deviceInfo.DeviceModel),
                 DeviceInfo =
-                    new DeviceInfoPacket(deviceInfo.DeviceModel, BinaryUtils.ComputeMD5(deviceInfo.DeviceIdentifier),
+                    new DeviceInfoPacket(deviceInfo.DeviceModel, deviceInfo.DeviceIdentifier.ComputeMD5(),
                         deviceInfo.DeviceVendor),
                 SystemInfo = new SystemInfoPacket()
             };
@@ -59,68 +87,11 @@ namespace SharpQQ.Service
                 {325, IMEI.ComputeMD5()}
             };
 
-            // ------------------------------------
-            // Key generation
-            var ecparam = SecNamedCurves.GetByOid(SecObjectIdentifiers.SecP192k1);
-            var domain = new ECDomainParameters(ecparam.Curve, ecparam.G, ecparam.N);
-            var rnd = new SecureRandom();
-            rnd.SetSeed(MiscellaneousUtils.UnifiedRandomBytes(10));
-            var gen = new ECKeyPairGenerator();
-            gen.Init(new ECKeyGenerationParameters(domain, rnd));
-            var myKeyPair = gen.GenerateKeyPair();
-            var qqPublicKey = PublicKeyFactory.CreateKey(Constants.QQServerKey);
-            var agreement = AgreementUtilities.GetBasicAgreement("ECDH");
-            agreement.Init(myKeyPair.Private);
-            var sharedSecret = agreement.CalculateAgreement(qqPublicKey);
-            var qsKey = sharedSecret.ToByteArrayUnsigned().ComputeMD5();
-            var myPublicKeyData = ((ECPublicKeyParameters) myKeyPair.Public).Q.GetEncoded();
-
-
-            // ------------------------------------
-            // Final packing
-            var tlvEncrypted = QSCrypt.Encrypt(tlvCollection.GetBinary(), qsKey);
-            var loginData = new LoginDataPacket
-            {
-                QQNumber = (int) qqNumber,
-                PublicKey = myPublicKeyData,
-                Data = tlvEncrypted.Concat(new byte[] {3}).ToArray()
-            };
-            var loginDataBinary = loginData.GetBinary();
-
-            var finalPayload = new byte[] {2}
-                .Concat(MyBitConverter.GetBytesFromUInt16((ushort) (loginDataBinary.Length + 3), Endianness.Big))
-                .Concat(loginDataBinary).ToArray();
-
-            return ( finalPayload, qsKey, accountInfo.TGTGTKey, agreement );
+            return (tlvCollection, accountInfo.TGTGTKey);
         }
 
-        public static QQAccount DecodeLoginResponse(byte[] response, byte[] qsKey, byte[] tgtgtKey, IBasicAgreement agreement)
+        public static QQAccount DecodeLoginResponse(byte[] dataCCipher, byte[] tgtgtKey)
         {
-            const int startPosition = 16;
-            var dataACipher = response.Skip(startPosition).Take(response.Length - startPosition - 1).ToArray();
-            var dataA = new LoginResponseA();
-            dataA.ParseFrom(QSCrypt.Decrypt(dataACipher, qsKey));
-            string prepend = dataA.PeerKey.Length < 30 ? "302E301006072A8648CE3D020106052B8104001F031A00" : "3046301006072A8648CE3D020106052B8104001F03320004";
-            var peerRawKey = prepend.ToBin().Concat(dataA.PeerKey).ToArray();
-            
-            var sharedSecret2 = agreement.CalculateAgreement(PublicKeyFactory.CreateKey(peerRawKey)).ToByteArrayUnsigned();
-            var keyB = sharedSecret2.ComputeMD5();
-            byte[] dataB = QSCrypt.Decrypt(dataA.EncryptedData, keyB);
-            var dataBCollection = new TlvConvertibleCollection();
-            dataBCollection.ParseFrom(dataB.Skip(1).ToArray());
-
-            const short dataCTag = 281;
-            if (!dataBCollection.TryGetValue(dataCTag, out var dataCCipher))
-            {
-                if (dataBCollection.TryGet(out ErrorMessagePacket err))
-                {
-                    throw new LoginException(err.Message, err.ErrorType);
-                }
-                else
-                {
-                    throw new QQException("Unknown error during login.");
-                }
-            }
             var dataC = QSCrypt.Decrypt(dataCCipher, tgtgtKey);
             var dataCCollection = new TlvConvertibleCollection();
             dataCCollection.ParseFrom(dataC);
@@ -129,7 +100,7 @@ namespace SharpQQ.Service
             const short D2Tag = 323;
             const short KeyTag = 773;
             var userInfo = dataCCollection.Get<UserInfoPacket>();
-            
+
             var account = new QQAccount
             {
                 Auth =
@@ -144,14 +115,72 @@ namespace SharpQQ.Service
             return account;
         }
 
+        private static async Task<TlvConvertibleCollection> DoRequest(MsfServer msf, long qqNumber,
+            TlvConvertibleCollection data, QQKey key)
+        {
+            var qsKey = key.CalculateQSKey(Constants.QQServerKey);
+            var tlvEncrypted = QSCrypt.Encrypt(data.GetBinary(), qsKey);
+            var loginData = new LoginDataPacket
+            {
+                QQNumber = (int) qqNumber,
+                PublicKey = key.PublicKeyData,
+                Data = tlvEncrypted.Concat(new byte[] {3}).ToArray()
+            };
+            var loginDataBinary = loginData.GetBinary();
+
+            var finalPayload = new byte[] {2}
+                .Concat(MyBitConverter.GetBytesFromUInt16((ushort) (loginDataBinary.Length + 3), Endianness.Big))
+                .Concat(loginDataBinary).ToArray();
+
+            var loginResponse = await msf.DoRequest("wtlogin.login", finalPayload);
+            var responseData = loginResponse.ResponsePayload;
+
+            const int startPosition = 16;
+            var dataACipher = responseData.Skip(startPosition).Take(responseData.Length - startPosition - 1).ToArray();
+            var dataA = new LoginResponseA();
+            dataA.ParseFrom(QSCrypt.Decrypt(dataACipher, qsKey));
+            string prepend = dataA.PeerKey.Length < 30
+                ? "302E301006072A8648CE3D020106052B8104001F031A00"
+                : "3046301006072A8648CE3D020106052B8104001F03320004";
+            var peerRawKey = prepend.ToBin().Concat(dataA.PeerKey).ToArray();
+
+            var keyB = key.CalculateQSKey(peerRawKey);
+            byte[] dataB = QSCrypt.Decrypt(dataA.EncryptedData, keyB);
+            var dataBCollection = new TlvConvertibleCollection();
+            dataBCollection.ParseFrom(dataB.Skip(1).ToArray());
+            return dataBCollection;
+        }
+
         public static async Task<QQAccount> Login(MsfServer msf, long qqNumber, byte[] passwordMD5,
             DeviceInfo deviceInfo)
         {
-            var (reqPacket, qsKey, tgtgtKey, agreement) =
+            var encKey = new QQKey();
+
+            var (reqPacket, tgtgtKey) =
                 GenerateLoginRequest(qqNumber, msf.MsfInfo.IMEI, msf.MsfInfo.KSID, passwordMD5, deviceInfo);
-            Console.WriteLine(reqPacket.ToHex());
-            var loginResponse = await msf.DoRequest("wtlogin.login", reqPacket);
-            var account = DecodeLoginResponse(loginResponse.ResponsePayload, qsKey, tgtgtKey, agreement);
+
+            var dataBCollection = await DoRequest(msf, qqNumber, reqPacket, encKey);
+
+            const short dataCTag = 281, contextTokenTag = 260, captchaImageTag = 261;
+            if (!dataBCollection.TryGetValue(dataCTag, out var dataCCipher))
+            {
+                if (dataBCollection.TryGet(out ErrorMessagePacket err))
+                {
+                    throw new LoginException(err.Message, err.ErrorType);
+                }
+                else if (dataBCollection.TryGetValue(captchaImageTag, out byte[] captchaTokenDat)) // Requires CAPTCHA
+                {
+                    var captchaToken = Encoding.ASCII.GetString(captchaTokenDat);
+                    var captchaImage = dataBCollection[captchaImageTag];
+                    throw new QQException("Captcha required.");
+                }
+                else
+                {
+                    throw new QQException("Unknown error during login.");
+                }
+            }
+
+            var account = DecodeLoginResponse(dataCCipher, tgtgtKey);
             return account;
         }
     }
