@@ -10,7 +10,7 @@ namespace Tests
     {
         private static readonly byte[] KSID = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 
-        private static readonly MsfGeneralInfo GlobalMsfInfo = new MsfGeneralInfo()
+        public static readonly MsfGeneralInfo GlobalMsfInfo = new MsfGeneralInfo()
         {
             AppId = 537051018,
             IMEI = "867981879491101",

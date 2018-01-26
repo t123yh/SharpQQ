@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpQQLib", "SharpQQLib\Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F58DDF73-D486-4B29-B56C-90A4417B2BA1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CliTest", "CliTest\CliTest.csproj", "{23D883E9-27FC-4ED6-861D-06950FCFEDE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F58DDF73-D486-4B29-B56C-90A4417B2BA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23D883E9-27FC-4ED6-861D-06950FCFEDE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23D883E9-27FC-4ED6-861D-06950FCFEDE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23D883E9-27FC-4ED6-861D-06950FCFEDE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23D883E9-27FC-4ED6-861D-06950FCFEDE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

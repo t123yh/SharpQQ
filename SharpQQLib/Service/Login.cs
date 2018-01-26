@@ -13,9 +13,12 @@ using SharpQQ.Binarizer.Tlv;
 using SharpQQ.Protocol.Msf;
 using SharpQQ.Service.Packets;
 using SharpQQ.Utils;
+using System.Drawing;
 
 namespace SharpQQ.Service
 {
+    public delegate Task<string> PromptCaptcha(string promptText, byte[] jpegImage);
+
     public static class LoginHelper
     {
         public struct DeviceInfo
@@ -53,7 +56,33 @@ namespace SharpQQ.Service
             }
         }
 
-        public static (TlvConvertibleCollection, byte[]) GenerateLoginRequest(long qqNumber, string IMEI,
+        private static string ExtractCaptchaPrompt(byte[] raw)
+        {
+            const string expectedName = "pic_reason";
+            var reader = new BinaryBufferReader(raw);
+            try
+            {
+                int fieldCount = reader.ReadInt32(Endianness.Big);
+                for (int i = 0; i < fieldCount; i++)
+                {
+                    byte nameLen = reader.ReadByte();
+                    string name = Encoding.ASCII.GetString(reader.ReadByteArray(nameLen).ToArray());
+                    int contentLen = reader.ReadInt32(Endianness.Big);
+                    string content = Encoding.ASCII.GetString(reader.ReadByteArray(contentLen).ToArray());
+                    if (name == expectedName)
+                    {
+                        return content;
+                    }
+                }
+            }
+            catch (BinarizerException)
+            {
+            }
+
+            return "";
+        }
+
+        private static (TlvConvertibleCollection, byte[]) EncodeLoginRequest(long qqNumber, string IMEI,
             byte[] KSID,
             byte[] passwordMD5, DeviceInfo deviceInfo)
         {
@@ -78,7 +107,7 @@ namespace SharpQQ.Service
                 new Tlv_T18((int) qqNumber),
                 new Tlv_T1((int) qqNumber, (int) timestamp),
                 {262, encryptedAccountInfo},
-                {278, "000017FF7C00010400015F5E10E2".ToBin()},
+                new Tlv_T116(),
                 {256, "000100000005000000102002BF8A00000000021610E0".ToBin()},
                 {263, "000000000001".ToBin()},
                 {264, KSID},
@@ -90,9 +119,20 @@ namespace SharpQQ.Service
             return (tlvCollection, accountInfo.TGTGTKey);
         }
 
-        public static QQAccount DecodeLoginResponse(byte[] dataCCipher, byte[] tgtgtKey)
+        private static TlvConvertibleCollection EncodeCaptchaResult(byte[] contextToken, string captchaText,
+            byte[] captchaToken)
         {
-            var dataC = QSCrypt.Decrypt(dataCCipher, tgtgtKey);
+            return new TlvConvertibleCollection(0x2)
+            {
+                {8, "000800080000000008040000".ToBin()},
+                {260, contextToken},
+                new Tlv_T116(),
+                new CaptchaResultPacket() {CaptchaText = captchaText, CaptchaToken = captchaToken}
+            };
+        }
+
+        private static QQAccount DecodeLoginResponse(byte[] dataC)
+        {
             var dataCCollection = new TlvConvertibleCollection();
             dataCCollection.ParseFrom(dataC);
 
@@ -152,27 +192,45 @@ namespace SharpQQ.Service
         }
 
         public static async Task<QQAccount> Login(MsfServer msf, long qqNumber, byte[] passwordMD5,
-            DeviceInfo deviceInfo)
+            DeviceInfo deviceInfo, PromptCaptcha promptCaptcha)
         {
             var encKey = new QQKey();
 
-            var (reqPacket, tgtgtKey) =
-                GenerateLoginRequest(qqNumber, msf.MsfInfo.IMEI, msf.MsfInfo.KSID, passwordMD5, deviceInfo);
+            var (loginPacket, tgtgtKey) =
+                EncodeLoginRequest(qqNumber, msf.MsfInfo.IMEI, msf.MsfInfo.KSID, passwordMD5, deviceInfo);
 
-            var dataBCollection = await DoRequest(msf, qqNumber, reqPacket, encKey);
+            var nextReqPacket = loginPacket;
 
-            const short dataCTag = 281, contextTokenTag = 260, captchaImageTag = 261;
-            if (!dataBCollection.TryGetValue(dataCTag, out var dataCCipher))
+            byte[] dataC;
+
+            while (true)
             {
-                if (dataBCollection.TryGet(out ErrorMessagePacket err))
+                var dataBCollection = await DoRequest(msf, qqNumber, nextReqPacket, encKey);
+
+                const short dataCTag = 281, contextTokenTag = 260, captchaReasonTag = 357;
+                if (dataBCollection.TryGetValue(dataCTag, out var dataCCipher))
+                {
+                    dataC = QSCrypt.Decrypt(dataCCipher, tgtgtKey);
+                    break;
+                }
+                else if (dataBCollection.TryGet(out ErrorMessagePacket err)) // Login Error
                 {
                     throw new LoginException(err.Message, err.ErrorType);
                 }
-                else if (dataBCollection.TryGetValue(captchaImageTag, out byte[] captchaTokenDat)) // Requires CAPTCHA
+                else if (dataBCollection.TryGet(out CaptchaImagePacket captchaImage)) // Requires CAPTCHA
                 {
-                    var captchaToken = Encoding.ASCII.GetString(captchaTokenDat);
-                    var captchaImage = dataBCollection[captchaImageTag];
-                    throw new QQException("Captcha required.");
+                    var contextToken = dataBCollection[contextTokenTag];
+                    var promptText = ExtractCaptchaPrompt(dataBCollection[captchaReasonTag]);
+                    if (promptCaptcha != null)
+                    {
+                        var captchaText = await promptCaptcha(promptText, captchaImage.ImageJpeg);
+                        nextReqPacket = EncodeCaptchaResult(contextToken, captchaText, captchaImage.Token);
+                        continue;
+                    }
+                    else
+                    {
+                        throw new QQException("Captcha required, but no captcha prompt method provided.");
+                    }
                 }
                 else
                 {
@@ -180,7 +238,7 @@ namespace SharpQQ.Service
                 }
             }
 
-            var account = DecodeLoginResponse(dataCCipher, tgtgtKey);
+            var account = DecodeLoginResponse(dataC);
             return account;
         }
     }
