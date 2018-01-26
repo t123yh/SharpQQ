@@ -68,7 +68,7 @@ namespace SharpQQ.Service
                     byte nameLen = reader.ReadByte();
                     string name = Encoding.ASCII.GetString(reader.ReadByteArray(nameLen).ToArray());
                     int contentLen = reader.ReadInt32(Endianness.Big);
-                    string content = Encoding.ASCII.GetString(reader.ReadByteArray(contentLen).ToArray());
+                    string content = Encoding.UTF8.GetString(reader.ReadByteArray(contentLen).ToArray());
                     if (name == expectedName)
                     {
                         return content;
@@ -238,7 +238,7 @@ namespace SharpQQ.Service
                 }
             }
 
-            var account = DecodeLoginResponse(dataC);
+            var account = DecodeLoginResponse(new byte[2] {0, 0}.Concat(dataC).ToArray());
             return account;
         }
     }
