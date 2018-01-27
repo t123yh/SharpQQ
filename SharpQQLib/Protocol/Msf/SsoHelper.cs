@@ -40,7 +40,7 @@ namespace SharpQQ.Protocol.Msf
             {
                 Sequence = sequence,
                 AppId = msfInfo.AppId,
-                NetworkType = msfInfo.NetworkType,
+                NetworkType = 1,
                 A2 = auth?.A2 ?? new byte[0],
                 OperationName = operationName,
                 Cookie = cookie,

@@ -16,7 +16,6 @@ namespace Tests
             IMEI = "867981879491101",
             IMSIRevision = "460110500720615|A1.1.5.9114",
             KSID = KSID,
-            NetworkType = 1
         };
 
 
