@@ -79,7 +79,7 @@ namespace SharpQQ.Service
             {
             }
 
-            return "";
+            return "请输入验证码";
         }
 
         private static (TlvConvertibleCollection, byte[]) EncodeLoginRequest(long qqNumber, string IMEI,
