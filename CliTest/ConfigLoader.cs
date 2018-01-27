@@ -8,9 +8,9 @@ namespace CliTest
 {
     public static class ConfigLoader
     {
-        public static async Task<DeviceIdentity> LoadDeviceIdentity(string fileName)
+        public static async Task<T> LoadConfig<T>(string fileName, Func<Task<T>> generateNew)
         {
-            DeviceIdentity result;
+            T result;
             try
             {
                 var val = await File.ReadAllTextAsync(fileName);
@@ -18,19 +18,19 @@ namespace CliTest
                 var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(new PascalCaseNamingConvention())
                     .Build();
-                result = deserializer.Deserialize<DeviceIdentity>(new StringReader(val));
+                result = deserializer.Deserialize<T>(new StringReader(val));
             }
             catch (Exception)
             {
-                Console.WriteLine("Unable to read device identity file, generating a new one...");
-                result = await DeviceIdentity.AskForInfo();
+                Console.WriteLine($"Unable to read config file for {typeof(T).Name}, generating a new one...");
+                result = await generateNew();
                 var serializer = new SerializerBuilder()
                     .WithNamingConvention(new PascalCaseNamingConvention())
                     .Build();
 
                 var text = serializer.Serialize(result);
                 await File.WriteAllTextAsync(fileName, text);
-                Console.WriteLine($"Device identity has been saved to {fileName}");
+                Console.WriteLine($"Config has been saved to {fileName}");
             }
 
             return result;
