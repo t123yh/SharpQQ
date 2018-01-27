@@ -1,6 +1,4 @@
-using SharpQQ.Protocol.Msf.Packets;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace SharpQQ.Protocol.Msf
 {

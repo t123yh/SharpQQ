@@ -8,12 +8,10 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using SharpQQ.Binarizer;
-using SharpQQ.Binarizer.Structured;
 using SharpQQ.Binarizer.Tlv;
 using SharpQQ.Protocol.Msf;
 using SharpQQ.Service.Packets;
 using SharpQQ.Utils;
-using System.Drawing;
 
 namespace SharpQQ.Service
 {

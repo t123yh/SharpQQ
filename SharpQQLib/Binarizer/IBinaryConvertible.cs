@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace SharpQQ.Binarizer
 {
     public interface IBinaryConvertible
