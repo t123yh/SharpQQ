@@ -24,6 +24,8 @@ namespace SharpQQ.Service
             public string DeviceModel;
             public string DeviceVendor;
             public byte[] DeviceIdentifier;
+            public string NetworkOperator;
+            public string AndroidVersion;
         }
 
         private class QQKey
@@ -95,10 +97,15 @@ namespace SharpQQ.Service
             var environmentInfo = new EnvironmentInfoPacket()
             {
                 BuildModelInfo = new BuildModelnfoPacket(deviceInfo.DeviceModel),
-                DeviceInfo =
-                    new DeviceInfoPacket(deviceInfo.DeviceModel, deviceInfo.DeviceIdentifier.ComputeMD5(),
-                        deviceInfo.DeviceVendor),
-                SystemInfo = new SystemInfoPacket()
+                DeviceInfo = new DeviceInfoPacket(
+                    deviceInfo.DeviceModel,
+                    deviceInfo.DeviceIdentifier.ComputeMD5(),
+                    deviceInfo.DeviceVendor
+                ),
+                SystemInfo = new SystemInfoPacket(
+                    deviceInfo.AndroidVersion,
+                    deviceInfo.NetworkOperator
+                )
             };
             var tlvCollection = new TlvConvertibleCollection(0x9)
             {
