@@ -124,10 +124,10 @@ namespace SharpQQ.Service
         {
             return new TlvConvertibleCollection(0x2)
             {
-                {8, "000800080000000008040000".ToBin()},
+                new CaptchaResultPacket() {CaptchaText = captchaText, CaptchaToken = captchaToken},
+                {8, "0000000008040000".ToBin()},
                 {260, contextToken},
                 new Tlv_T116(),
-                new CaptchaResultPacket() {CaptchaText = captchaText, CaptchaToken = captchaToken}
             };
         }
 

@@ -7,7 +7,7 @@ namespace SharpQQ.Service.Packets
     public class CaptchaResultPacket : StructuredBinaryConvertible
     {
         [IntegerField(1)]
-        public int _Unknown1 { get; set; } = 0;
+        public short _Unknown1 { get; set; } = 0;
         
         [VariableLengthByteArrayField(2, PrependLengthType.Int16BE, PrependLengthTransform.NoTransform)]
         public string CaptchaText { get; set; }
