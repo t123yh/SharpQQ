@@ -1,8 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using Mono.Options;
 using Nito.AsyncEx;
+using Org.BouncyCastle.Security;
 using SharpQQ.Protocol.Msf;
 using SharpQQ.Service;
 using SharpQQ.Utils;
@@ -13,62 +16,87 @@ namespace CliTest
     {
         private static readonly byte[] KSID = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 
-        public static readonly MsfGeneralInfo GlobalMsfInfo = new MsfGeneralInfo()
-        {
-            AppId = 537051018,
-            IMEI = "867981879491234",
-            IMSIRevision = "460220500720615|A1.1.5.9114",
-            KSID = KSID,
-            NetworkType = 1
-        };
-        
-        public static readonly MsfGeneralInfo GlobalMsfInfo1 = new MsfGeneralInfo()
-        {
-            AppId = 537051018,
-            IMEI = "237981444441234",
-            IMSIRevision = "460244501999823|A1.1.5.9114",
-            KSID = KSID,
-            NetworkType = 1
-        };
-
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
             AsyncContext.Run(TestQQ);
         }
 
         private static async Task TestQQ()
         {
-            var rnd = new Random();
-            long qqNumber = 2260128230;
-            byte[] password = BinaryUtils.ComputeMD5("qq.test123");
-            byte[] deviceIdPlain = Encoding.ASCII.GetBytes("sssddd222");
-            var server = new MsfServer(qqNumber, GlobalMsfInfo1);
-            await server.ConnectAsync();
-            try
+            string deviceIdFile = "device-identity.dat.yml";
+            string accountTokenFile = "account-token.dat.yml";
+            bool showHelp = false;
+
+            var options = new OptionSet
             {
-                var result = await LoginHelper.Login(server, qqNumber, password, new LoginHelper.DeviceInfo()
-                {
-                    DeviceIdentifier = deviceIdPlain,
-                    DeviceModel = "huawei",
-                    DeviceVendor = "Mate 10"
-                }, PromptCaptcha);
-                Console.WriteLine($"OK! User name: {result.NickName}");
-            }
-            catch (QQException ex)
+                {"d|device-identity=", "Device Identity File", (file) => deviceIdFile = file},
+                {"a|account-token=", "Account Token File", (file) => accountTokenFile = file},
+                {"h|help", "Show this message and exit", h => showHelp = h != null},
+            };
+            if (showHelp)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                options.WriteOptionDescriptions(Console.Out);
+                return;
             }
+
+            MsfServer msf = null;
+            var deviceIdentity = await ConfigLoader.LoadConfig(deviceIdFile, DeviceIdentity.AskForInfo);
+            var accountToken = await ConfigLoader.LoadConfig(accountTokenFile, async () =>
+            {
+                long qqNumber = long.Parse(await Utils.Prompt("QQ Number: "));
+                byte[] password = (await Utils.Prompt("Password: ")).ComputeMD5();
+                msf = await InitializeMsfServer(deviceIdentity, qqNumber);
+                return await TestLogin.Login(msf, password, deviceIdentity);
+            });
+            
+            // Found accountToken, Msf Server not loaded
+            if (msf == null)
+                msf = await InitializeMsfServer(deviceIdentity, accountToken.QQNumber);
+
+            msf.AuthInfo = new AccountAuthInfo()
+            {
+                A2 = accountToken.A2.ToBin(),
+                D2 = accountToken.D2.ToBin(),
+                EncryptKey = accountToken.EncryptKey.ToBin(),
+                QQNumber = accountToken.QQNumber
+            };
         }
 
-        private static async Task<string> PromptCaptcha(string promptText, byte[] jpegImage)
+        private static async Task<MsfServer> InitializeMsfServer(DeviceIdentity dev, long qqNumber)
         {
-            string imgFileName = Path.GetTempFileName() + ".jpg";
-            Console.WriteLine(promptText);
-            await File.WriteAllBytesAsync(imgFileName, jpegImage);
-            Console.WriteLine($"Captcha image has been written to {imgFileName}");
-            Console.Write("Please input captcha: ");
-            return await Task.Run(() => Console.ReadLine());
+            var ksid = new byte[16];
+            Utils.GlobalRandom.NextBytes(ksid);
+            var msfInfo = new MsfGeneralInfo()
+            {
+                AppId = SharpQQ.Constants.AppId,
+                IMEI = dev.IMEI,
+                IMSIRevision = dev.IMSI + "|A1.1.5.9114",
+                KSID = ksid,
+            };
+            var server = new MsfServer(qqNumber, msfInfo);
+            server.ConnectionFailed += async delegate
+            {
+                int failCount = 0;
+                while (true)
+                {
+                    int delay = (int) (Math.Pow(1.5, failCount) * 100);
+                    Console.WriteLine($"Connection failure, retry after {delay / 1000.0}s");
+                    await Task.Delay(delay);
+                    try
+                    {
+                        await server.ConnectAsync();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Unable to connect to server: {ex.Message}");
+                        failCount++;
+                    }
+                }
+            };
+            await server.ConnectAsync();
+            return server;
         }
+
     }
 }
