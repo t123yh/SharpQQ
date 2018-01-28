@@ -38,7 +38,7 @@ namespace SharpQQ.Protocol.Jce
         public T Get<T>(string name)
         {
             var stream = new JceInputStream(this._data[name]);
-            return (T)stream.Read(typeof(T), null, 0, true);
+            return (T) stream.Read(typeof(T), null, 0, true);
         }
 
         public byte[] Encode()
@@ -56,12 +56,21 @@ namespace SharpQQ.Protocol.Jce
             var _is = new JceInputStream(buf);
             this.Packet = new UniPacketStruct();
             this.Packet.ReadFrom(_is);
-            if (this.Packet.Version != 3)
-            {
-                throw new JceDecodeException($"Incompatible UniPacket version ${this.Packet.Version}.");
-            }
             var _is2 = new JceInputStream(this.Packet.Buffer);
-            this._data = (Dictionary<string, byte[]>)_is2.Read(typeof(Dictionary<string, byte[]>), this._data, 0, true);
+            if (this.Packet.Version == 3)
+            {
+                this._data =
+                    (Dictionary<string, byte[]>) _is2.Read(typeof(Dictionary<string, byte[]>), this._data, 0, true);
+            }
+            else if (this.Packet.Version == 2)
+            {
+                this._data = _is2.readMap<Dictionary<string, Dictionary<string, byte[]>>>(0, false)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.First().Value);
+            }
+            else
+            {
+                throw new JceDecodeException($"Incompatible UniPacket version: {this.Packet.Version}");
+            }
         }
     }
 }
