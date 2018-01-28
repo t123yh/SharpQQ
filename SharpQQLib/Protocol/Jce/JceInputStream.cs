@@ -688,19 +688,19 @@ namespace SharpQQ.Protocol.Jce
             return readArray(s, tag, isRequire);
         }
 
-        public IDictionary readMap<T>(T arg, int tag, bool isRequire)
+        public T readMap<T>(int tag, bool isRequire)
         {
-            IDictionary m = BasicClassTypeUtil.CreateObject(arg.GetType()) as IDictionary;
+            IDictionary m = BasicClassTypeUtil.CreateObject(typeof(T)) as IDictionary;
             if (m == null)
             {
-                return null;
+                return default(T);
             }
 
             Type type = m.GetType();
             Type[] argsType = type.GetGenericArguments();
             if (argsType == null || argsType.Length < 2)
             {
-                return null;
+                return default(T);
             }
 
             var mk = BasicClassTypeUtil.CreateObject(argsType[0]);
@@ -749,7 +749,7 @@ namespace SharpQQ.Protocol.Jce
             {
                 throw new JceDecodeException("require field not exist.");
             }
-            return m;
+            return (T)m;
         }
 
         public bool[] Read(bool[] l, int tag, bool isRequire)
@@ -998,18 +998,12 @@ namespace SharpQQ.Protocol.Jce
             return (T[])readArrayImpl(l[0], tag, isRequire);
         }
 
-        public IList readList<T>(T l, int tag, bool isRequire)
+        public T readList<T>(int tag, bool isRequire)
         {
-            // 生成代码时已经往List里面添加了一个元素，纯粹用来作为类型识别，否则java无法识别到List里面放的是什么类型的数据
-            if (l == null)
-            {
-                return null;
-            }
-
-            IList list = BasicClassTypeUtil.CreateObject(l.GetType()) as IList;
+            IList list = BasicClassTypeUtil.CreateObject(typeof(T)) as IList;
             if (list == null)
             {
-                return null;
+                return default(T);
             }
 
             object objItem = BasicClassTypeUtil.CreateListItem(list.GetType());
@@ -1024,10 +1018,10 @@ namespace SharpQQ.Protocol.Jce
                     list.Add(obj);
                 }
 
-                return list;
+                return (T)list;
             }
 
-            return null;
+            return default(T);
         }
 
         public List<T> readArray<T>(List<T> l, int tag, bool isRequire)
@@ -1292,14 +1286,14 @@ namespace SharpQQ.Protocol.Jce
                 return this.GetType()
                     .GetMethod("readList")
                     .MakeGenericMethod(type)
-                    .Invoke(this, new object[] { o, tag, isRequire });
+                    .Invoke(this, new object[] { tag, isRequire });
             }
             else if (o is IDictionary)
             {
                 return this.GetType()
                     .GetMethod("readMap")
                     .MakeGenericMethod(type)
-                    .Invoke(this, new object[] { o, tag, isRequire });
+                    .Invoke(this, new object[] { tag, isRequire });
             }
             else
             {
