@@ -48,8 +48,7 @@ namespace SharpQQ.Protocol.Jce
             this.Packet.Buffer = _os.toByteArray();
             var _os2 = new JceOutputStream();
             this.Packet.WriteTo(_os2);
-            var bodys = _os2.toByteArray();
-            return MyBitConverter.IntegerToBytes(bodys.Length + 4, Endianness.Big).Concat(bodys).ToArray();
+            return _os2.toByteArray();
         }
 
         private void Deocde(byte[] buf)
