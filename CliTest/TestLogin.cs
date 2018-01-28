@@ -13,14 +13,7 @@ namespace CliTest
         {
             try
             {
-                var result = await LoginHelper.Login(msf, msf.QQNumber, passwordMD5, new QQDeviceInfo()
-                {
-                    DeviceIdentifier = dev.DeviceId.ToBin(),
-                    DeviceModel = dev.DeviceModel,
-                    DeviceVendor = dev.DeviceVendor,
-                    AndroidVersion = dev.AndroidVersion,
-                    NetworkOperator = dev.NetworkOperator
-                }, PromptCaptcha);
+                var result = await LoginHelper.Login(msf, msf.QQNumber, passwordMD5, dev.QQDeviceInfo, PromptCaptcha);
                 Console.WriteLine($"OK! User name: {result.NickName}");
                 return new AccountToken()
                 {
@@ -36,7 +29,7 @@ namespace CliTest
                 throw;
             }
         }
-        
+
         private static async Task<string> PromptCaptcha(string promptText, byte[] jpegImage)
         {
             string imgFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".jpg");
