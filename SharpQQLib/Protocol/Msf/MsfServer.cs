@@ -27,13 +27,14 @@ namespace SharpQQ.Protocol.Msf
         private readonly CancellationTokenSource _globalCancellationTokenSource;
         private readonly AsyncProducerConsumerQueue<MsfTask> _waitingTasks = new AsyncProducerConsumerQueue<MsfTask>();
 
-        public event EventHandler ConnectionFailed;
+        public event EventHandler ConnectionFailure;
 
         public long QQNumber { get; }
         public AccountAuthInfo AuthInfo { get; set; }
         public MsfGeneralInfo MsfInfo { get; }
         public byte[] CurrentCookie { get; private set; }
         public bool Connected { get; private set; }
+        private bool IsDisconnecting { get; set; }
 
         public MsfServer(long qqNumber, MsfGeneralInfo msfInfo, AccountAuthInfo auth = null)
         {
@@ -146,18 +147,23 @@ namespace SharpQQ.Protocol.Msf
 
         private void HandleConnectionFailure()
         {
-            this.Disconnect();
-            this.ConnectionFailed?.Invoke(this, new EventArgs());
+            if (!IsDisconnecting)
+            {
+                this.Disconnect();
+                this.ConnectionFailure?.Invoke(this, new EventArgs());
+            }
         }
 
         public void Disconnect()
         {
+            IsDisconnecting = true;
             this._baseClient?.Dispose();
             this._globalCancellationTokenSource.Cancel();
         }
 
         public async Task ConnectAsync(int defaultTimeout = 1000000)
         {
+            IsDisconnecting = false;
             this._baseClient?.Dispose();
 
             this._baseClient = new TcpClient();

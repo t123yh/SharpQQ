@@ -74,7 +74,7 @@ namespace CliTest
                 KSID = ksid,
             };
             var server = new MsfServer(qqNumber, msfInfo);
-            server.ConnectionFailed += async delegate
+            server.ConnectionFailure += async delegate
             {
                 int failCount = 0;
                 while (true)
