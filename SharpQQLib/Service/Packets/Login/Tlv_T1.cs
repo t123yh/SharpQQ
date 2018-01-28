@@ -2,7 +2,7 @@
 using SharpQQ.Binarizer.Tlv;
 using SharpQQ.Utils;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     [TlvPacketContent(1)]
     public class Tlv_T1 : StructuredBinaryConvertible

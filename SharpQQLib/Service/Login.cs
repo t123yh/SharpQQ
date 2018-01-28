@@ -11,6 +11,7 @@ using SharpQQ.Binarizer;
 using SharpQQ.Binarizer.Tlv;
 using SharpQQ.Protocol.Msf;
 using SharpQQ.Service.Packets;
+using SharpQQ.Service.Packets.Login;
 using SharpQQ.Utils;
 
 namespace SharpQQ.Service

@@ -1,8 +1,7 @@
-﻿using System.Text;
-using SharpQQ.Binarizer.Structured;
+﻿using SharpQQ.Binarizer.Structured;
 using SharpQQ.Binarizer.Tlv;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     // oicq.wlogin_sdk.b.ag (TLV_T128)
     [TlvPacketContent(0x128)]

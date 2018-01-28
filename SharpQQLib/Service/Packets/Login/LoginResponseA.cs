@@ -1,6 +1,6 @@
 ﻿using SharpQQ.Binarizer.Structured;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     public class LoginResponseA : StructuredBinaryConvertible
     {

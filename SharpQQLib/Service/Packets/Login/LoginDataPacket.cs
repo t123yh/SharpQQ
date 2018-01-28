@@ -1,9 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using SharpQQ.Binarizer.Structured;
+﻿using SharpQQ.Binarizer.Structured;
 using SharpQQ.Utils;
 using PrependLengthType = SharpQQ.Binarizer.Structured.PrependLengthType;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     public class LoginDataPacket : StructuredBinaryConvertible
     {

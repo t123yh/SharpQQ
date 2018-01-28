@@ -1,9 +1,8 @@
 ﻿using SharpQQ.Binarizer.Structured;
-using SharpQQ.Binarizer.Tlv;
 using SharpQQ.Utils;
 using PrependLengthType = SharpQQ.Binarizer.Structured.PrependLengthType;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     // oicq.wlogin_sdk.b.i
     public class AccountInfoPacket : StructuredBinaryConvertible

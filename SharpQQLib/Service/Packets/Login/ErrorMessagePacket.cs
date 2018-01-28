@@ -1,7 +1,7 @@
 ﻿using SharpQQ.Binarizer.Structured;
 using SharpQQ.Binarizer.Tlv;
 
-namespace SharpQQ.Service.Packets
+namespace SharpQQ.Service.Packets.Login
 {
     [TlvPacketContent(326)]
     public class ErrorMessagePacket : StructuredBinaryConvertible
