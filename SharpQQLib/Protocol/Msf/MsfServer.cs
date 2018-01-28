@@ -35,6 +35,8 @@ namespace SharpQQ.Protocol.Msf
         public byte[] CurrentCookie { get; private set; }
         public bool Connected { get; private set; }
         private bool IsDisconnecting { get; set; }
+        public PushHandlerCollection PushHandlers { get; } = new PushHandlerCollection();
+
 
         public MsfServer(long qqNumber, MsfGeneralInfo msfInfo, AccountAuthInfo auth = null)
         {
@@ -119,7 +121,12 @@ namespace SharpQQ.Protocol.Msf
                 {
                     var packet = await this._baseClient.ReadPacketAsync();
                     var content = SsoHelper.DecodeResponse(packet, this.AuthInfo);
-                    if (_taskList.ContainsKey(content.Header.Sequence))
+                    if (content.Header.Sequence < 0)
+                    {
+                        this.PushHandlers.Invoke(content.Header.OperationName, this,
+                            new PushEventArgs(content.Header.OperationName, content.Payload));
+                    }
+                    else if (_taskList.ContainsKey(content.Header.Sequence))
                     {
                         var result = new MsfResult()
                         {
