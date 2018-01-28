@@ -37,7 +37,6 @@ namespace SharpQQ.Protocol.Msf
         private bool IsDisconnecting { get; set; }
         public PushHandlerCollection PushHandlers { get; } = new PushHandlerCollection();
 
-
         public MsfServer(long qqNumber, MsfGeneralInfo msfInfo, AccountAuthInfo auth = null)
         {
             this.QQNumber = qqNumber;
@@ -59,6 +58,9 @@ namespace SharpQQ.Protocol.Msf
         }
 
         #endregion
+
+        public long ServerIP => MyBitConverter.GetUInt32(((IPEndPoint) this._baseClient.Client.RemoteEndPoint).Address.GetAddressBytes(), Endianness.Little);
+
 
         public async Task<MsfResult> DoRequest(string opName, byte[] data, int timeout = Timeout.Infinite)
         {
