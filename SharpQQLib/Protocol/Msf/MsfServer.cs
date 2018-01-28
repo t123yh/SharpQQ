@@ -48,10 +48,13 @@ namespace SharpQQ.Protocol.Msf
 
         #region Sequence
 
-        private int _nextSequence = 10000;
+        private const int InitialSequence = 10000;
+        private int _nextSequence = InitialSequence;
 
         public int IncreaseSequence()
         {
+            if (_nextSequence > int.MaxValue - 1000)
+                _nextSequence = InitialSequence;
             return Interlocked.Increment(ref _nextSequence) - 1;
         }
 
