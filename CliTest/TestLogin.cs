@@ -13,7 +13,7 @@ namespace CliTest
         {
             try
             {
-                var result = await LoginHelper.Login(msf, msf.QQNumber, passwordMD5, new LoginHelper.DeviceInfo()
+                var result = await LoginHelper.Login(msf, msf.QQNumber, passwordMD5, new QQDeviceInfo()
                 {
                     DeviceIdentifier = dev.DeviceId.ToBin(),
                     DeviceModel = dev.DeviceModel,

@@ -20,15 +20,6 @@ namespace SharpQQ.Service
 
     public static class LoginHelper
     {
-        public struct DeviceInfo
-        {
-            public string DeviceModel;
-            public string DeviceVendor;
-            public byte[] DeviceIdentifier;
-            public string NetworkOperator;
-            public string AndroidVersion;
-        }
-
         private class QQKey
         {
             private AsymmetricCipherKeyPair KeyPair { get; }
@@ -85,7 +76,7 @@ namespace SharpQQ.Service
 
         private static (TlvConvertibleCollection, byte[]) EncodeLoginRequest(long qqNumber, string IMEI,
             byte[] KSID,
-            byte[] passwordMD5, DeviceInfo deviceInfo)
+            byte[] passwordMD5, QQDeviceInfo deviceInfo)
         {
             long timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
 
@@ -198,7 +189,7 @@ namespace SharpQQ.Service
         }
 
         public static async Task<QQAccount> Login(MsfServer msf, long qqNumber, byte[] passwordMD5,
-            DeviceInfo deviceInfo, PromptCaptcha promptCaptcha)
+            QQDeviceInfo deviceInfo, PromptCaptcha promptCaptcha)
         {
             var encKey = new QQKey();
 
