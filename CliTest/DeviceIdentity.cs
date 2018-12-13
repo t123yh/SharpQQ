@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using SharpQQ.Service;
 using SharpQQ.Utils;
+using YamlDotNet.Serialization;
 
 namespace CliTest
 {
@@ -15,6 +16,7 @@ namespace CliTest
         public string DeviceVendor { get; set; }
         public string DeviceModel { get; set; }
 
+        [YamlIgnore]
         public QQDeviceInfo QQDeviceInfo => new QQDeviceInfo()
         {
             DeviceIdentifier = DeviceId.ToBin(),
